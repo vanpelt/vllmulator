@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>vLLM Configuration Helper</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 900px;
+        margin: 2em auto;
+        line-height: 1.5;
+      }
+      h1 {
+        text-align: center;
+      }
+      label {
+        display: block;
+        margin-top: 1em;
+        font-weight: bold;
+      }
+      select,
+      input {
+        margin-top: 0.5em;
+        padding: 0.3em;
+        width: 100%;
+        max-width: 300px;
+      }
+      .inline-inputs {
+        display: flex;
+        gap: 1em;
+        flex-wrap: wrap;
+      }
+      .inline-inputs > div {
+        flex: 1;
+        min-width: 150px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1em;
+      }
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 0.5em;
+        text-align: center;
+      }
+      th {
+        background: #f5f5f5;
+      }
+      .cmd-output {
+        background: #272822;
+        color: #f8f8f2;
+        padding: 1em;
+        border-radius: 4px;
+        margin-top: 1em;
+        white-space: pre-wrap;
+        font-family: Consolas, "Courier New", monospace;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>vLLM Configuration Helper</h1>
+    <p>
+      Select your GPU and model below. Then enter the model’s hidden size (so we
+      can compute KV‐cache), your desired max context length and max output
+      tokens, and we’ll show you:
+    </p>
+    <ol>
+      <li>Which precision variants of that model will fit on your GPU</li>
+      <li>Approximate KV‐cache size in GB</li>
+      <li>A suggested vLLM command line (with flags) you can copy & paste</li>
+    </ol>
+
+    <!-- Top 3 selectors in 3 columns -->
+    <div class="inline-inputs">
+      <div>
+        <label for="gpu-select">1. Pick a GPU:</label>
+        <select id="gpu-select">
+          <option value="">-- Select GPU --</option>
+        </select>
+      </div>
+      <div>
+        <label for="model-family-select">2. Pick a Model Family:</label>
+        <select id="model-family-select">
+          <option value="">-- Select Family --</option>
+        </select>
+      </div>
+      <div>
+        <label for="model-name-select">3. Pick a Model:</label>
+        <select id="model-name-select" disabled>
+          <option value="">-- Select Model --</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Precision Table -->
+    <div id="precision-table-container" style="display: none">
+      <h2>Available Precision Variants</h2>
+      <table id="precision-table">
+        <thead>
+          <tr>
+            <th>Precision</th>
+            <th>Memory Req. (GB)</th>
+            <th>Estimated KV‐cache Per Token (MB)</th>
+            <th>Choose This</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Hidden Size & Context / Output Inputs -->
+    <div id="kv-inputs" style="display: none">
+      <h2>4. KV‐Cache / Context Settings</h2>
+      <div class="inline-inputs">
+        <div>
+          <label for="hidden-size">Hidden Size:</label>
+          <input type="number" id="hidden-size" readonly />
+          <div
+            id="hidden-size-info"
+            style="font-size: 0.8em; color: #666; margin-top: 0.3em"
+          >
+            Auto-detected from model metadata
+          </div>
+        </div>
+        <div>
+          <label for="context-len">Max Context Length (tokens):</label>
+          <input
+            type="number"
+            id="context-len"
+            placeholder="e.g. 4096"
+            min="1"
+          />
+        </div>
+        <div>
+          <label for="output-len">Max Output Tokens:</label>
+          <input type="number" id="output-len" placeholder="e.g. 512" min="0" />
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Results -->
+    <div id="results" style="display: none; margin-top: 2em">
+      <h2>5. Results</h2>
+      <p>
+        <strong>Model Parameter Size:</strong>
+        <span id="param-size">—</span>
+      </p>
+      <p>
+        <strong>Estimated KV‐Cache Size:</strong>
+        <span id="kv-cache-size">—</span>
+      </p>
+      <p>
+        <strong>Total Memory Required:</strong>
+        <span id="total-memory">—</span>
+      </p>
+
+      <!-- Multi-GPU Config Section -->
+      <div id="multi-gpu-section">
+        <h3>Multi-GPU Configurations</h3>
+        <div class="parallelism-info" style="background: #f8f8f8; padding: 1em; margin-bottom: 1em; border-left: 4px solid #ccc;">
+          <strong>Understanding Parallelism Strategies:</strong>
+          <ul>
+            <li><strong>Tensor Parallelism (TP):</strong> Divides each layer across GPUs. Lower latency, higher throughput, requires fast GPU interconnect.</li>
+            <li><strong>Pipeline Parallelism (PP):</strong> Divides layers sequentially across GPUs. Higher latency, more memory efficient for KV cache.</li>
+            <li><strong>Optimal Config:</strong> <span style="color: #038543">✓ Highlighted in green</span>. Balances efficiency and performance.</li>
+          </ul>
+        </div>
+        <p>
+          The following configurations distribute the model across multiple
+          GPUs:
+        </p>
+        <table id="multi-gpu-table">
+          <thead>
+            <tr>
+              <th>GPUs</th>
+              <th>Tensor Parallel</th>
+              <th>Pipeline Parallel</th>
+              <th>Memory Per GPU (GB)</th>
+              <th>Remaining RAM (GB)</th>
+              <th>Choose</th>
+            </tr>
+          </thead>
+          <tbody id="multi-gpu-tbody"></tbody>
+        </table>
+      </div>
+
+      <p><strong>Suggested vLLM Command Line:</strong></p>
+      <div class="cmd-output" id="vllm-cmd-text">—</div>
+    </div>
+
+    <script>
+      // ────────────────────────────────────────────────────────────────────────────────
+      // 1) Load GPU data and fetch model data from models.json
+      // ────────────────────────────────────────────────────────────────────────────────
+
+      // Store enriched models data
+      let enrichedModelsData = {};
+      let processedModels = [];
+
+      // Function to fetch and process enriched_models.json
+      async function fetchModelsData() {
+        try {
+          const response = await fetch("enriched_models.json");
+          if (!response.ok) {
+            throw new Error("Failed to load enriched_models.json");
+          }
+          enrichedModelsData = await response.json();
+
+          // Process the enriched data into our models format
+          processedModels = [];
+          
+          Object.keys(enrichedModelsData).forEach(family => {
+            enrichedModelsData[family].forEach(model => {
+                             // Calculate memory variants based on parameters
+               const paramGB = model.Parameters / 1e9; // Convert to billions
+               const variants = {
+                 fp32_gb: Math.round(paramGB * 4 * 100) / 100, // 4 bytes per parameter
+                 fp16_gb: Math.round(paramGB * 2 * 100) / 100, // 2 bytes per parameter
+                 fp8_gb: Math.round(paramGB * 1 * 100) / 100,  // 1 byte per parameter
+                 fp6_gb: Math.round(paramGB * 0.75 * 100) / 100, // 0.75 bytes per parameter
+                 int8_gb: Math.round(paramGB * 1 * 100) / 100, // 1 byte per parameter
+                 int4_gb: Math.round(paramGB * 0.5 * 100) / 100, // 0.5 bytes per parameter
+                 fp4_gb: Math.round(paramGB * 0.5 * 100) / 100  // 0.5 bytes per parameter
+               };
+
+              // Extract a clean model name from the ID
+              const modelName = model.ID.split('/').pop();
+              
+              // Detect if this is a MoE model
+              const isMoE = model.Type === "mixtral" || 
+                           model.Type === "deepseek_v3" || 
+                           model.ID.toLowerCase().includes("mixtral") ||
+                           model.Parameters > 100000000000; // >100B params likely MoE
+              
+              // For MoE models, estimate active parameters (typically 10-20% of total)
+              let activeParameters = model.Parameters;
+              if (isMoE) {
+                if (model.Type === "mixtral") {
+                  // Mixtral 8x22B has ~39B active parameters out of 140B total
+                  activeParameters = Math.round(model.Parameters * 0.28);
+                } else if (model.Type === "deepseek_v3") {
+                  // DeepSeek-R1 has ~37B active out of 684B total
+                  activeParameters = Math.round(model.Parameters * 0.054);
+                } else {
+                  // Generic estimate for other MoE models
+                  activeParameters = Math.round(model.Parameters * 0.15);
+                }
+              }
+
+              processedModels.push({
+                name: modelName,
+                fullId: model.ID,
+                family: model.Family,
+                parameters: model.Parameters,
+                active_parameters: activeParameters,
+                hidden_size: model["Hidden Size"],
+                hidden_layers: model["Hidden Layers"],
+                type: isMoE ? "moe" : "dense",
+                model_type: model.Type,
+                variants: variants // Use total parameter variants for memory calculation
+              });
+            });
+          });
+
+          console.log(`Loaded ${processedModels.length} models from enriched_models.json`);
+        } catch (error) {
+          console.error("Error loading enriched_models.json:", error);
+        }
+      }
+
+      // Function will be called by the populateFamilyDropdown section
+
+      const dataset = {
+        gpus: [
+          {
+            name: "NVIDIA GB200 (Blackwell)",
+            type: "datacenter",
+            memory_gb: 192,
+            datatypes: [
+              "FP64",
+              "FP32",
+              "TF32",
+              "BF16",
+              "FP16",
+              "FP8",
+              "FP6",
+              "INT8",
+              "FP4",
+            ],
+          },
+          {
+            name: "NVIDIA H100",
+            type: "datacenter",
+            memory_gb: 80,
+            datatypes: [
+              "FP64",
+              "FP32",
+              "TF32",
+              "BF16",
+              "FP16",
+              "FP8",
+              "INT8",
+              "INT4",
+            ],
+          },
+          {
+            name: "NVIDIA A100 (80 GB)",
+            type: "datacenter",
+            memory_gb: 80,
+            datatypes: ["FP64", "FP32", "TF32", "BF16", "FP16", "INT8", "INT4"],
+          },
+          {
+            name: "NVIDIA A100 (40 GB)",
+            type: "datacenter",
+            memory_gb: 40,
+            datatypes: ["FP64", "FP32", "TF32", "BF16", "FP16", "INT8", "INT4"],
+          },
+          {
+            name: "NVIDIA V100 (32 GB)",
+            type: "datacenter",
+            memory_gb: 32,
+            datatypes: ["FP64", "FP32", "FP16"],
+          },
+          {
+            name: "NVIDIA V100 (16 GB)",
+            type: "datacenter",
+            memory_gb: 16,
+            datatypes: ["FP64", "FP32", "FP16"],
+          },
+          {
+            name: "NVIDIA A30",
+            type: "datacenter",
+            memory_gb: 24,
+            datatypes: ["FP64", "FP32", "TF32", "BF16", "FP16", "INT8", "INT4"],
+          },
+          {
+            name: "NVIDIA T4",
+            type: "datacenter",
+            memory_gb: 16,
+            datatypes: ["FP32", "FP16", "INT8", "INT4"],
+          },
+          {
+            name: "NVIDIA RTX A6000",
+            type: "professional-workstation",
+            memory_gb: 48,
+            datatypes: ["FP32", "TF32", "BF16", "FP16", "INT8", "INT4"],
+          },
+          {
+            name: "NVIDIA Quadro RTX 8000",
+            type: "professional-workstation",
+            memory_gb: 48,
+            datatypes: ["FP32", "FP16", "INT8", "INT4"],
+          },
+          {
+            name: "NVIDIA RTX 4090",
+            type: "consumer",
+            memory_gb: 24,
+            datatypes: ["FP32", "TF32", "BF16", "FP16", "FP8", "INT8", "INT4"],
+          },
+          {
+            name: "NVIDIA RTX 3090",
+            type: "consumer",
+            memory_gb: 24,
+            datatypes: ["FP32", "TF32", "BF16", "FP16", "INT8", "INT4"],
+          },
+          {
+            name: "NVIDIA L4",
+            type: "datacenter",
+            memory_gb: 24,
+            datatypes: ["FP32", "TF32", "BF16", "FP16", "FP8", "INT8", "INT4"],
+          },
+        ]
+      };
+
+      // ────────────────────────────────────────────────────────────────────────────────
+      // 2) Populate the GPU and model-family dropdowns on page load
+      // ────────────────────────────────────────────────────────────────────────────────
+
+      const gpuSelect = document.getElementById("gpu-select");
+      const modelFamilySelect = document.getElementById("model-family-select");
+      const modelNameSelect = document.getElementById("model-name-select");
+      const precisionTableContainer = document.getElementById(
+        "precision-table-container"
+      );
+      const precisionTableBody = document.querySelector(
+        "#precision-table tbody"
+      );
+      const kvInputsDiv = document.getElementById("kv-inputs");
+      const resultsDiv = document.getElementById("results");
+      const kvCacheSizeSpan = document.getElementById("kv-cache-size");
+      const vllmCmdTextDiv = document.getElementById("vllm-cmd-text");
+
+      let chosenGPU = null;
+      let chosenModel = null;
+      let chosenPrecision = null;
+
+      // Fill GPU dropdown
+      dataset.gpus.forEach((gpu, idx) => {
+        const opt = document.createElement("option");
+        opt.value = idx;
+        opt.textContent = `${gpu.name} (${gpu.memory_gb} GB)`;
+        gpuSelect.appendChild(opt);
+      });
+
+      // Function to populate family dropdown after models are loaded
+      function populateFamilyDropdown() {
+        const families = Array.from(
+          new Set(processedModels.map((m) => m.family))
+        ).sort();
+        families.forEach((fam, idx) => {
+          const opt = document.createElement("option");
+          opt.value = fam;
+          opt.textContent = fam;
+          modelFamilySelect.appendChild(opt);
+        });
+      }
+
+      // Wait for models to load, then populate family dropdown
+      fetchModelsData().then(() => {
+        populateFamilyDropdown();
+      });
+
+      // When GPU is selected
+      gpuSelect.addEventListener("change", () => {
+        const idx = gpuSelect.value;
+        chosenGPU = idx === "" ? null : dataset.gpus[idx];
+        resetModelAndPrecision();
+      });
+
+      // When family is selected, populate model names
+      modelFamilySelect.addEventListener("change", () => {
+        const fam = modelFamilySelect.value;
+        modelNameSelect.innerHTML = `<option value="">-- Select Model --</option>`;
+        if (!fam) {
+          modelNameSelect.disabled = true;
+          resetPrecisionSection();
+          return;
+        }
+        modelNameSelect.disabled = false;
+        const filtered = processedModels
+          .filter((m) => m.family === fam)
+          .sort((a, b) => a.name.localeCompare(b.name));
+        filtered.forEach((m, idx) => {
+          const opt = document.createElement("option");
+          opt.value = m.name;
+          opt.textContent = m.name;
+          modelNameSelect.appendChild(opt);
+        });
+        resetPrecisionSection();
+      });
+
+      // When model is selected, show precision variants that fit
+      modelNameSelect.addEventListener("change", () => {
+        const mName = modelNameSelect.value;
+        if (!mName) {
+          resetPrecisionSection();
+          return;
+        }
+        chosenModel = processedModels.find((m) => m.name === mName);
+
+        // Set hidden size from enriched model data
+        const hiddenSizeInput = document.getElementById("hidden-size");
+        const hiddenSizeInfo = document.getElementById("hidden-size-info");
+
+        if (chosenModel && chosenModel.hidden_size) {
+          hiddenSizeInput.value = chosenModel.hidden_size;
+          hiddenSizeInput.readOnly = true;
+          hiddenSizeInfo.textContent = "Auto-detected from enriched model data";
+        } else {
+          // Fallback if no hidden size found
+          hiddenSizeInput.readOnly = false;
+          hiddenSizeInput.placeholder = "e.g. 4096, 8192";
+          hiddenSizeInfo.textContent = "Please enter hidden size manually";
+        }
+
+        // Pre-populate input and output tokens from enriched data
+        const contextLenInput = document.getElementById("context-len");
+        const outputLenInput = document.getElementById("output-len");
+        
+        // Find the original enriched model data to get Input/Output Tokens
+        const familyModels = enrichedModelsData[chosenModel.family];
+        const enrichedModel = familyModels ? familyModels.find(m => m.ID === chosenModel.fullId) : null;
+        
+        if (enrichedModel) {
+          if (enrichedModel["Input Tokens"]) {
+            contextLenInput.value = enrichedModel["Input Tokens"];
+          }
+          if (enrichedModel["Output Tokens"]) {
+            outputLenInput.value = enrichedModel["Output Tokens"];
+          }
+        }
+
+        showPrecisionVariants();
+      });
+
+      // Add event listeners for automatic recomputation
+      document.getElementById("context-len").addEventListener("input", computeResults);
+      document.getElementById("output-len").addEventListener("input", computeResults);
+      document.getElementById("hidden-size").addEventListener("input", computeResults);
+
+      function resetModelAndPrecision() {
+        modelFamilySelect.value = "";
+        modelNameSelect.innerHTML = `<option value="">-- Select Model --</option>`;
+        modelNameSelect.disabled = true;
+        resetPrecisionSection();
+      }
+
+      function resetPrecisionSection() {
+        precisionTableBody.innerHTML = "";
+        precisionTableContainer.style.display = "none";
+        kvInputsDiv.style.display = "none";
+        resultsDiv.style.display = "none";
+
+        // Remove MoE info if it exists
+        const tableContainer = document.getElementById("precision-table-container");
+        const existingMoeInfo = tableContainer.querySelector(".moe-info");
+        if (existingMoeInfo) {
+          existingMoeInfo.remove();
+        }
+
+        // Reset hidden size input
+        const hiddenSizeInput = document.getElementById("hidden-size");
+        const hiddenSizeInfo = document.getElementById("hidden-size-info");
+        hiddenSizeInput.value = "";
+        hiddenSizeInput.readOnly = true;
+        hiddenSizeInfo.textContent = "Auto-detected from model metadata";
+
+        chosenModel = null;
+        chosenPrecision = null;
+      }
+
+      function showPrecisionVariants() {
+        precisionTableBody.innerHTML = "";
+        precisionTableContainer.style.display = "block";
+        kvInputsDiv.style.display = "none";
+        resultsDiv.style.display = "none";
+        chosenPrecision = null;
+
+        const gpuMem = chosenGPU.memory_gb;
+        const variants = chosenModel.variants;
+        
+        // Always remove existing MoE info first
+        const tableContainer = document.getElementById("precision-table-container");
+        const existingMoeInfo = tableContainer.querySelector(".moe-info");
+        if (existingMoeInfo) {
+          existingMoeInfo.remove();
+        }
+        
+        // Add MoE indicator if this is a MoE model
+        const isMoE = chosenModel.type === "moe";
+        if (isMoE) {
+          const moeInfo = document.createElement("div");
+          moeInfo.className = "moe-info";
+          moeInfo.style.cssText = "background: #e6f3ff; padding: 1em; margin-bottom: 1em; border-left: 4px solid #0066cc; border-radius: 4px;";
+          
+          const totalParams = (chosenModel.parameters / 1e9).toFixed(1);
+          const activeParams = (chosenModel.active_parameters / 1e9).toFixed(1);
+          
+          moeInfo.innerHTML = `
+            <strong>🧠 Mixture of Experts (MoE) Model</strong><br/>
+            <strong>Total Parameters:</strong> ${totalParams}B | <strong>Active per Token:</strong> ${activeParams}B<br/>
+            <em>Memory calculations use total parameters (all experts must be loaded). Expert parallelism can distribute experts across GPUs to reduce per-GPU memory.</em>
+          `;
+          
+          tableContainer.insertBefore(moeInfo, tableContainer.querySelector("table"));
+        }
+        
+        // Get the hidden size
+        const hiddenSize = parseInt(
+          document.getElementById("hidden-size").value
+        );
+
+        // Define precision groups with combined entries
+        const precisionGroups = [
+          { key: "fp32_gb", display: "FP32", dtype: "FP32" },
+          { key: "fp16_gb", display: "FP16", dtype: "FP16" },
+          { key: "fp8_gb", display: "FP8/INT8", dtype: "FP8", alt_key: "int8_gb" },
+          { key: "fp6_gb", display: "FP6", dtype: "FP6" },
+          { key: "int4_gb", display: "FP4/INT4", dtype: "FP4", alt_key: "fp4_gb" }
+        ];
+
+        // Build rows for grouped variants
+        for (let group of precisionGroups) {
+          const memReq = variants[group.key];
+          if (memReq === undefined) continue;
+
+          // Check if this precision is supported by the selected GPU
+          const gpuSupportsThisPrecision = chosenGPU.datatypes.some(dtype => 
+            dtype === group.dtype || 
+            (group.dtype === "FP8" && (dtype === "FP8" || dtype === "INT8")) ||
+            (group.dtype === "FP4" && (dtype === "FP4" || dtype === "INT4")) ||
+            (group.dtype === "FP6" && dtype === "FP6")
+          );
+
+          // Skip if GPU doesn't support this precision
+          if (!gpuSupportsThisPrecision) continue;
+
+          const tr = document.createElement("tr");
+
+          // Calculate how many GPUs this would need
+          const gpusNeeded = Math.ceil(memReq / gpuMem);
+          
+          // Set row style based on GPU requirements with heat colors
+          if (gpusNeeded > 1) {
+            if (gpusNeeded > 4) {
+              // More than 4 GPUs - HOT red
+              tr.style.backgroundColor = "#ffebee";
+              tr.style.color = "#c62828";
+              tr.style.fontWeight = "bold";
+              tr.title = `Requires ${gpusNeeded} GPUs - Very Hot 🔥🔥`;
+            } else {
+              // 2-4 GPUs - Warm orange
+              tr.style.backgroundColor = "#fff3e0";
+              tr.style.color = "#f57c00";
+              tr.title = `Requires ${gpusNeeded} GPUs - Hot 🔥`;
+            }
+          }
+          // Memory Req
+          const tdMem = document.createElement("td");
+          tdMem.textContent = `${memReq} GB`;
+          // KV‐cache per token calculation
+          const tdKvPerToken = document.createElement("td");
+
+          // Determine dtype_bytes for this precision group
+          let dtypeBytes;
+          if (group.dtype === "FP32") dtypeBytes = 4;
+          else if (group.dtype === "FP16") dtypeBytes = 2;
+          else if (group.dtype === "FP8") dtypeBytes = 1;
+          else if (group.dtype === "FP6") dtypeBytes = 0.75;
+          else if (group.dtype === "FP4") dtypeBytes = 0.5;
+          else dtypeBytes = 2; // default
+
+          if (hiddenSize && !isNaN(hiddenSize)) {
+            // Use actual hidden layers from enriched data or estimate
+            let numLayers = chosenModel.hidden_layers || 32; // fallback to 32 if not available
+            
+            // Calculate KV cache size per token in MB
+            // KV cache = num_layers × hidden_size × 2 (for K and V) × dtype_bytes
+            const kvPerTokenMB = (numLayers * hiddenSize * dtypeBytes * 2) / (1024 * 1024);
+            tdKvPerToken.textContent = `${kvPerTokenMB.toFixed(
+              2
+            )} MB per token (${numLayers} layers)`;
+          } else {
+            tdKvPerToken.textContent = `Need hidden size × layers × ${dtypeBytes} bytes × 2`;
+          }
+          // Radio button
+          const tdRadio = document.createElement("td");
+          const radio = document.createElement("input");
+          radio.type = "radio";
+          radio.name = "precision-radio";
+          radio.value = group.dtype; // Use the primary dtype for the value
+          radio.addEventListener("change", () => {
+            chosenPrecision = group.dtype;
+            kvInputsDiv.style.display = "block";
+            // Update KV per‐token placeholder now that we know the precision
+            updateKvPlaceholders(group.dtype);
+            // Automatically compute results
+            computeResults();
+          });
+          tdRadio.appendChild(radio);
+
+          // Precision name cell
+          const tdPrec = document.createElement("td");
+          tdPrec.textContent = group.display;
+
+          tr.appendChild(tdPrec);
+          tr.appendChild(tdMem);
+          tr.appendChild(tdKvPerToken);
+          tr.appendChild(tdRadio);
+          precisionTableBody.appendChild(tr);
+        }
+
+        // If no variants are found, show a message
+        if (!precisionTableBody.children.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 4;
+          td.textContent = "No precision variants found for this model.";
+          tr.appendChild(td);
+          precisionTableBody.appendChild(tr);
+        }
+      }
+
+      function updateKvPlaceholders(precision) {
+        // dtype_bytes for grouped precisions
+        let dtypeBytes;
+        if (precision === "FP32") dtypeBytes = 4;
+        else if (precision === "FP16") dtypeBytes = 2;
+        else if (precision === "FP8") dtypeBytes = 1;
+        else if (precision === "FP6") dtypeBytes = 0.75;
+        else if (precision === "FP4") dtypeBytes = 0.5;
+        else dtypeBytes = 2; // default to 2 bytes
+
+        // Get the hidden size value
+        const hiddenSizeInput = document.getElementById("hidden-size");
+        const hiddenSize = parseInt(hiddenSizeInput.value);
+
+        // Update all rows in the table
+        const rows = precisionTableBody.querySelectorAll("tr");
+        rows.forEach((row) => {
+          const radio = row.querySelector('input[type="radio"]');
+          if (radio && radio.value === precision) {
+            const tdKv = row.children[2];
+
+            if (hiddenSize && !isNaN(hiddenSize)) {
+              // Use actual hidden layers from enriched data or estimate
+              let numLayers = chosenModel.hidden_layers || 32; // fallback to 32 if not available
+              
+              // Calculate KV cache size per token in MB
+              // KV cache = num_layers × hidden_size × 2 (for K and V) × dtype_bytes
+              const kvPerTokenMB =
+                (numLayers * hiddenSize * dtypeBytes * 2) / (1024 * 1024);
+              tdKv.textContent = `${kvPerTokenMB.toFixed(2)} MB per token (${numLayers} layers)`;
+            } else {
+              tdKv.textContent = `Need hidden size × layers × ${dtypeBytes} bytes × 2`;
+            }
+          }
+        });
+      }
+
+      // Function to compute results automatically
+      function computeResults() {
+        // Only compute if we have all necessary selections
+        if (!chosenGPU || !chosenModel || !chosenPrecision) {
+          resultsDiv.style.display = "none";
+          return;
+        }
+        const hiddenSize = parseInt(
+          document.getElementById("hidden-size").value
+        );
+        const contextLen = parseInt(
+          document.getElementById("context-len").value
+        );
+        const outputLen = parseInt(document.getElementById("output-len").value);
+
+        if (!chosenPrecision) {
+          alert("Please select a precision variant first.");
+          return;
+        }
+        if (!hiddenSize || !contextLen || isNaN(outputLen)) {
+          alert(
+            "Please enter valid numbers for hidden size, context length, and output tokens."
+          );
+          return;
+        }
+
+        // Determine dtype_bytes
+        let dtypeBytes;
+        const p = chosenPrecision;
+        if (p === "FP32") dtypeBytes = 4;
+        else if (p === "FP16") dtypeBytes = 2;
+        else if (p === "FP8") dtypeBytes = 1;
+        else if (p === "FP6") dtypeBytes = 0.75;
+        else if (p === "FP4") dtypeBytes = 0.5;
+        else dtypeBytes = 2;
+        // Use actual hidden layers from enriched data
+        let numLayers = chosenModel.hidden_layers || 32; // fallback to 32 if not available
+
+        // KV‐cache size = num_layers × hidden_size × (contextLen + outputLen) × dtype_bytes × 2
+        // (the "×2" is because we store both Key and Value for each token). Then convert to GB.
+        const totalTokens = contextLen + outputLen;
+        const kvBytes = numLayers * hiddenSize * totalTokens * dtypeBytes * 2;
+        const kvGB = kvBytes / 1024 ** 3;
+
+        // Display parameter size
+        const paramSizeSpan = document.getElementById("param-size");
+        const totalMemorySpan = document.getElementById("total-memory");
+        const modelParamGB = parseFloat(chosenModel.variants[p.toLowerCase() + "_gb"]);
+        
+        // Format parameter count in human-friendly way
+        const totalParams = chosenModel.parameters;
+        let paramCountText;
+        if (totalParams >= 1e12) {
+          paramCountText = `${(totalParams / 1e12).toFixed(1)}T Parameters`;
+        } else if (totalParams >= 1e9) {
+          paramCountText = `${(totalParams / 1e9).toFixed(1)}B Parameters`;
+        } else if (totalParams >= 1e6) {
+          paramCountText = `${(totalParams / 1e6).toFixed(1)}M Parameters`;
+        } else {
+          paramCountText = `${totalParams.toLocaleString()} Parameters`;
+        }
+        
+        // Display all the memory requirements with MoE context
+        const isMoE = chosenModel.type === "moe";
+        if (isMoE) {
+          const activeParams = (chosenModel.active_parameters / 1e9).toFixed(1);
+          paramSizeSpan.textContent = `${modelParamGB.toFixed(2)} GB (${paramCountText}, ${activeParams}B Active) - MoE`;
+        } else {
+          paramSizeSpan.textContent = `${modelParamGB.toFixed(2)} GB (${paramCountText})`;
+        }
+        kvCacheSizeSpan.textContent = `${kvGB.toFixed(2)} GB (${numLayers} layers)`;
+        
+        // Total memory includes parameters, KV cache, and some overhead for CUDA context
+        const overheadGB = 2;
+        const totalMemGB = modelParamGB + kvGB + overheadGB;
+        totalMemorySpan.textContent = `${totalMemGB.toFixed(2)} GB (includes ${overheadGB} GB overhead)`;
+
+        // Build a suggested vLLM command‐line snippet. We assume:
+        //    - model path: the same as model name on Hugging Face (you can adjust)
+        //    - dtype: lowercase of chosenPrecision
+        //    - max_context: contextLen
+        //    - max_output_tokens: outputLen
+        //    - gpu id: we assume you want to run on GPU 0; adjust as needed.
+        //
+        // Example vLLM flags (you can adapt based on your vLLM version):
+        //    vllm run --model-path {model_name} --dtype {dtype}
+        //        --max-num-batched-tokens {max_batch} \
+        //        --max-seq-len {contextLen + outputLen} \
+        //        --gpu-id 0
+        //
+        // In many versions of vLLM you can specify:
+        //    --max-seq-len X   (total length = context + new tokens)
+        //    --max-output-tokens Y
+        //
+        // So we’ll output something like:
+        //    vllm run \
+        //      --model-path <model_name> \
+        //      --dtype <precision> \
+        //      --max-seq-len <context+output> \
+        //      --max-output-tokens <output> \
+        //      --gpu-id 0
+        //
+        // If you want tensor parallelism or other flags (e.g., --tensor-parallel-size),
+        // you can add them here manually.
+
+        const modelTag = chosenModel.fullId || chosenModel.name;
+        // Convert precision to FP variant for command generation
+        let dtypeFlag = chosenPrecision.toLowerCase();
+        if (dtypeFlag === "fp4") dtypeFlag = "fp4"; // Keep as fp4
+        else if (dtypeFlag === "fp8") dtypeFlag = "fp8"; // Keep as fp8
+        const maxSeq = totalTokens;
+        const maxOut = outputLen;
+
+        const cmdLines = [
+          `vllm run \\`,
+          `  --model-path ${modelTag} \\`,
+          `  --dtype ${dtypeFlag} \\`,
+          `  --max-seq-len ${maxSeq} \\`,
+          `  --max-output-tokens ${maxOut} \\`,
+          `  --gpu-id 0`,
+        ];
+
+        // Get the model size in the chosen precision
+        const precisionKey = p.toLowerCase() + "_gb";
+        const modelSizeGB = chosenModel.variants[precisionKey];
+
+        // Calculate multi-GPU configurations (using max 32 for all limits)
+        const multiGPUConfigs = calculateMultiGPUConfigs(
+          modelSizeGB,
+          kvGB,
+          chosenGPU.memory_gb,
+          32, // max GPUs
+          32, // max tensor parallelism
+          32  // max pipeline parallelism
+        );
+
+        // Populate the multi-GPU table
+        const multiGPUTbody = document.getElementById("multi-gpu-tbody");
+        multiGPUTbody.innerHTML = "";
+
+        // Filter out inefficient configurations (more free space than used)
+        const efficientConfigs = multiGPUConfigs.filter(config => {
+          // If GPU has more free space than used, it's inefficient
+          return !(config.remainingGB > config.memPerGPU);
+        });
+        
+        // If all configs got filtered out, keep the original list
+        const finalConfigs = efficientConfigs.length > 0 ? efficientConfigs : multiGPUConfigs;
+        
+        // Sort configurations by a weighted score:
+        // - Prefer fewer GPUs
+        // - Prefer configurations that use GPU memory efficiently
+        // - Prefer higher tensor parallelism (better performance)
+        finalConfigs.sort((a, b) => {
+          // First sort by GPU count (fewer is better)
+          if (a.numGPUs !== b.numGPUs) {
+            return a.numGPUs - b.numGPUs;
+          }
+          
+          // For same GPU count, prioritize tensor parallelism over pipeline
+          if (a.tp !== b.tp) {
+            return b.tp - a.tp; // higher TP is better for performance
+          }
+          
+          // Finally sort by memory efficiency (less waste is better)
+          return a.remainingGB - b.remainingGB;
+        });
+
+        let selectedConfig = null;
+        // Default to single GPU if it fits
+        const singleGPUConfig = finalConfigs.find(
+          (config) => config.numGPUs === 1
+        );
+        if (singleGPUConfig) {
+          selectedConfig = singleGPUConfig;
+        } else if (finalConfigs.length > 0) {
+          // Otherwise use the first (optimal) multi-GPU config
+          selectedConfig = finalConfigs[0];
+        }
+
+        finalConfigs.forEach((config, idx) => {
+          const tr = document.createElement("tr");
+          
+          // Highlight the optimal configuration
+          if (config === selectedConfig) {
+            tr.style.backgroundColor = "#e6f7e9";
+            tr.style.fontWeight = "bold";
+            tr.style.color = "#038543";
+          }
+
+          const tdGPUs = document.createElement("td");
+          tdGPUs.textContent = config.numGPUs;
+          
+          // Add checkmark to the first cell if this is the optimal config
+          if (config === selectedConfig) {
+            // Add a check mark to mark as optimal
+            const checkMark = document.createElement("span");
+            checkMark.textContent = " ✓";
+            checkMark.title = "Optimal configuration";
+            checkMark.style.color = "#038543";
+            tdGPUs.appendChild(checkMark);
+          }
+
+          const tdTP = document.createElement("td");
+          tdTP.textContent = config.tp;
+
+          const tdPP = document.createElement("td");
+          tdPP.textContent = config.pp;
+
+          const tdMemPerGPU = document.createElement("td");
+          tdMemPerGPU.textContent = config.memPerGPU.toFixed(1) + " GB";
+
+          const tdRemaining = document.createElement("td");
+          tdRemaining.textContent = config.remainingGB.toFixed(1) + " GB";
+
+          const tdRadio = document.createElement("td");
+          const radio = document.createElement("input");
+          radio.type = "radio";
+          radio.name = "multi-gpu-radio";
+          radio.value = idx;
+
+          // Select the most optimal config by default
+          if (config === selectedConfig) {
+            radio.checked = true;
+          }
+
+          radio.addEventListener("change", () => {
+            selectedConfig = config;
+            updateCommandLine(modelTag, dtypeFlag, maxSeq, maxOut, config);
+          });
+
+          tdRadio.appendChild(radio);
+
+          tr.appendChild(tdGPUs);
+          tr.appendChild(tdTP);
+          tr.appendChild(tdPP);
+          tr.appendChild(tdMemPerGPU);
+          tr.appendChild(tdRemaining);
+          tr.appendChild(tdRadio);
+
+          multiGPUTbody.appendChild(tr);
+        });
+
+        // If no configurations work, show a message
+        if (finalConfigs.length === 0) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 6;
+          td.textContent =
+            "No feasible configurations found. This model is too large for the available GPU memory.";
+          tr.appendChild(td);
+          multiGPUTbody.appendChild(tr);
+        } else {
+          // Update the command line with the selected configuration
+          updateCommandLine(
+            modelTag,
+            dtypeFlag,
+            maxSeq,
+            maxOut,
+            selectedConfig
+          );
+        }
+
+        resultsDiv.style.display = "block";
+      }
+
+      // Function to calculate various multi-GPU configurations
+      function calculateMultiGPUConfigs(
+        modelSizeGB,
+        kvCacheGB,
+        gpuMemGB,
+        maxGPUs,
+        maxTP,
+        maxPP
+      ) {
+        const configs = [];
+
+        // Add some buffer for CUDA context and other overhead (in GB)
+        const overheadGB = 2;
+
+        // Try all combinations of tensor and pipeline parallelism
+        for (let numGPUs = 1; numGPUs <= maxGPUs; numGPUs++) {
+          // Only consider valid TP/PP combinations that equal numGPUs
+          for (let tp = 1; tp <= Math.min(maxTP, numGPUs); tp *= 2) {
+            // For tensor parallelism, we typically use powers of 2
+            if ((tp & (tp - 1)) !== 0) continue; // Skip non-powers of 2
+
+            // Pipeline parallelism = numGPUs / tensor parallelism
+            const pp = numGPUs / tp;
+
+            // Only consider if pp is an integer and within maxPP
+            if (pp !== Math.floor(pp) || pp > maxPP) continue;
+
+            // Memory required per GPU calculation
+            // For tensor parallelism: model weights are divided by tp, KV cache is divided by pp
+            // For pipeline parallelism: model weights are divided by pp, KV cache is divided by pp
+            // Note: In vLLM, KV cache is partitioned by sequence length with pipeline parallelism
+            
+            // For MoE models with expert parallelism, expert layers can be distributed
+            // but we'll use a conservative estimate of total model size divided by total GPUs
+            const modelMemPerGPU = modelSizeGB / numGPUs;
+            const kvCachePerGPU = kvCacheGB / pp; // KV cache is divided by pipeline parallelism
+
+            const totalMemPerGPU = modelMemPerGPU + kvCachePerGPU + overheadGB;
+
+            // Only add configuration if it fits in GPU memory
+            if (totalMemPerGPU <= gpuMemGB) {
+              configs.push({
+                numGPUs,
+                tp,
+                pp,
+                memPerGPU: totalMemPerGPU,
+                remainingGB: gpuMemGB - totalMemPerGPU,
+              });
+            }
+          }
+        }
+
+        return configs;
+      }
+
+      // Function to update the command line based on selected configuration
+      function updateCommandLine(modelTag, dtypeFlag, maxSeq, maxOut, config) {
+        if (!config) {
+          vllmCmdTextDiv.textContent = "No valid configuration selected.";
+          return;
+        }
+
+        const isMoE = chosenModel.type === "moe";
+        let cmdLines;
+
+        if (config.numGPUs === 1) {
+          // Single GPU command
+          cmdLines = [
+            `vllm run \\`,
+            `  --model-path ${modelTag} \\`,
+            `  --dtype ${dtypeFlag} \\`,
+            `  --max-seq-len ${maxSeq} \\`,
+            `  --max-output-tokens ${maxOut} \\`,
+          ];
+          
+          // Add MoE-specific flags for single GPU
+          if (isMoE) {
+            cmdLines.push(`  --enable-expert-parallel \\`);
+          }
+          
+          cmdLines.push(`  --gpu-id 0`);
+        } else {
+          // Multi-GPU command with tensor and/or pipeline parallelism
+          cmdLines = [
+            `vllm run \\`,
+            `  --model-path ${modelTag} \\`,
+            `  --dtype ${dtypeFlag} \\`,
+            `  --max-seq-len ${maxSeq} \\`,
+            `  --max-output-tokens ${maxOut} \\`,
+            `  --tensor-parallel-size ${config.tp} \\`,
+          ];
+
+          // Add pipeline parallel flag if pp > 1
+          if (config.pp > 1) {
+            cmdLines.push(`  --pipeline-parallel-size ${config.pp} \\`);
+          }
+          
+          // Add MoE-specific flags for multi-GPU
+          if (isMoE) {
+            cmdLines.push(`  --enable-expert-parallel \\`);
+            // For MoE models, we can suggest expert parallelism size
+            // Typically set to number of experts divided by tensor parallel size
+            if (chosenModel.model_type === "mixtral") {
+              // Mixtral has 8 experts
+              const expertParallelSize = Math.max(1, Math.floor(8 / config.tp));
+              if (expertParallelSize > 1) {
+                cmdLines.push(`  --expert-parallel-size ${expertParallelSize} \\`);
+              }
+            } else if (chosenModel.model_type === "deepseek_v3") {
+              // DeepSeek-R1 has different expert topology
+              cmdLines.push(`  --expert-parallel-size 2 \\`);
+            }
+          }
+
+          // Add all GPUs
+          const gpuIds = Array.from(
+            { length: config.numGPUs },
+            (_, i) => i
+          ).join(",");
+          cmdLines.push(`  --gpu-id ${gpuIds}`);
+        }
+
+        // Add a note about MoE optimization
+        if (isMoE) {
+          const moeNote = `\n# MoE Model Optimization:\n# - Expert parallelism distributes experts across GPUs\n# - All experts loaded in memory, but only ~${(chosenModel.active_parameters / chosenModel.parameters * 100).toFixed(0)}% active per token\n# - Consider using --max-expert-parallel-tokens for fine-tuning`;
+          vllmCmdTextDiv.textContent = cmdLines.join("\n") + moeNote;
+        } else {
+          vllmCmdTextDiv.textContent = cmdLines.join("\n");
+        }
+      }
+    </script>
+  </body>
+</html>

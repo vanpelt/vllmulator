@@ -38,11 +38,16 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 318069,
+      "Downloads": 433069,
       "Last Updated": "2025-05-22T23:44:50+00:00",
-      "Likes": 935,
+      "Likes": 939,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": false,
+      "has_sliding_window": false,
+      "has_gqa": false,
+      "attention_details": {}
     },
     {
       "Family": "Llama",
@@ -79,11 +84,18 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 5580184,
+      "Downloads": 5232634,
       "Last Updated": "2024-09-25T17:00:57+00:00",
-      "Likes": 4068,
+      "Likes": 4081,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": false,
+      "has_sliding_window": false,
+      "has_gqa": true,
+      "attention_details": {
+        "gqa_ratio": 4.0
+      }
     },
     {
       "Family": "Llama",
@@ -120,11 +132,18 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 910235,
+      "Downloads": 885199,
       "Last Updated": "2024-12-21T18:28:01+00:00",
-      "Likes": 2353,
+      "Likes": 2358,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": false,
+      "has_sliding_window": false,
+      "has_gqa": true,
+      "attention_details": {
+        "gqa_ratio": 8.0
+      }
     },
     {
       "Family": "Llama",
@@ -164,11 +183,16 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 49380,
+      "Downloads": 52714,
       "Last Updated": "2025-05-22T23:46:12+00:00",
-      "Likes": 340,
+      "Likes": 342,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": false,
+      "has_sliding_window": false,
+      "has_gqa": false,
+      "attention_details": {}
     }
   ],
   "Qwen": [
@@ -202,11 +226,20 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 34480,
+      "Downloads": 40091,
       "Last Updated": "2025-01-12T02:04:23+00:00",
-      "Likes": 57,
+      "Likes": 58,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": true,
+      "has_sliding_window": true,
+      "has_gqa": true,
+      "attention_details": {
+        "sliding_window_size": 32768,
+        "window_layers": 36,
+        "gqa_ratio": 8.0
+      }
     },
     {
       "Family": "Qwen",
@@ -239,11 +272,20 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 401477,
+      "Downloads": 373984,
       "Last Updated": "2025-01-12T02:03:41+00:00",
       "Likes": 485,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": true,
+      "has_sliding_window": true,
+      "has_gqa": true,
+      "attention_details": {
+        "sliding_window_size": 131072,
+        "window_layers": 28,
+        "gqa_ratio": 7.0
+      }
     },
     {
       "Family": "Qwen",
@@ -276,11 +318,20 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 131629,
+      "Downloads": 131442,
       "Last Updated": "2025-01-12T02:02:22+00:00",
-      "Likes": 1865,
+      "Likes": 1869,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": true,
+      "has_sliding_window": true,
+      "has_gqa": true,
+      "attention_details": {
+        "sliding_window_size": 131072,
+        "window_layers": 64,
+        "gqa_ratio": 5.0
+      }
     },
     {
       "Family": "Qwen",
@@ -308,11 +359,20 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 303556,
+      "Downloads": 290273,
       "Last Updated": "2025-03-11T12:15:48+00:00",
       "Likes": 2771,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": true,
+      "has_sliding_window": true,
+      "has_gqa": true,
+      "attention_details": {
+        "sliding_window_size": 32768,
+        "window_layers": 64,
+        "gqa_ratio": 5.0
+      }
     },
     {
       "Family": "Qwen",
@@ -338,11 +398,20 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 2524463,
+      "Downloads": 2396815,
       "Last Updated": "2025-04-06T16:23:01+00:00",
-      "Likes": 940,
+      "Likes": 947,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": true,
+      "has_sliding_window": true,
+      "has_gqa": true,
+      "attention_details": {
+        "sliding_window_size": 32768,
+        "window_layers": 28,
+        "gqa_ratio": 7.0
+      }
     }
   ],
   "DeepSeek": [
@@ -367,11 +436,18 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 139941,
+      "Downloads": 184839,
       "Last Updated": "2025-02-24T03:31:15+00:00",
-      "Likes": 687,
+      "Likes": 688,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": true,
+      "has_hybrid_attention": false,
+      "has_sliding_window": false,
+      "has_gqa": true,
+      "attention_details": {
+        "gqa_ratio": 8.0
+      }
     },
     {
       "Family": "DeepSeek",
@@ -394,11 +470,18 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 1361694,
+      "Downloads": 1316527,
       "Last Updated": "2025-02-24T03:32:07+00:00",
-      "Likes": 739,
+      "Likes": 744,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": true,
+      "has_hybrid_attention": false,
+      "has_sliding_window": false,
+      "has_gqa": true,
+      "attention_details": {
+        "gqa_ratio": 4.0
+      }
     },
     {
       "Family": "DeepSeek",
@@ -421,11 +504,20 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 1272179,
+      "Downloads": 1283383,
       "Last Updated": "2025-02-24T03:32:35+00:00",
-      "Likes": 1217,
+      "Likes": 1218,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": true,
+      "has_hybrid_attention": true,
+      "has_sliding_window": true,
+      "has_gqa": true,
+      "attention_details": {
+        "sliding_window_size": 4096,
+        "window_layers": 21,
+        "gqa_ratio": 6.0
+      }
     },
     {
       "Family": "DeepSeek",
@@ -448,11 +540,20 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 540590,
+      "Downloads": 477072,
       "Last Updated": "2025-02-24T03:32:20+00:00",
       "Likes": 653,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": true,
+      "has_hybrid_attention": true,
+      "has_sliding_window": true,
+      "has_gqa": true,
+      "attention_details": {
+        "sliding_window_size": 4096,
+        "window_layers": 28,
+        "gqa_ratio": 7.0
+      }
     },
     {
       "Family": "DeepSeek",
@@ -475,11 +576,20 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 526704,
+      "Downloads": 454415,
       "Last Updated": "2025-02-24T03:31:45+00:00",
-      "Likes": 518,
+      "Likes": 520,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": true,
+      "has_hybrid_attention": true,
+      "has_sliding_window": true,
+      "has_gqa": true,
+      "attention_details": {
+        "sliding_window_size": 131072,
+        "window_layers": 48,
+        "gqa_ratio": 5.0
+      }
     },
     {
       "Family": "DeepSeek",
@@ -502,11 +612,20 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 254039,
+      "Downloads": 231950,
       "Last Updated": "2025-02-24T03:31:29+00:00",
-      "Likes": 1387,
+      "Likes": 1389,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": true,
+      "has_hybrid_attention": true,
+      "has_sliding_window": true,
+      "has_gqa": true,
+      "attention_details": {
+        "sliding_window_size": 131072,
+        "window_layers": 64,
+        "gqa_ratio": 5.0
+      }
     },
     {
       "Family": "DeepSeek",
@@ -531,11 +650,19 @@
         "fp8",
         "region:us"
       ],
-      "Downloads": 74650,
+      "Downloads": 97146,
       "Last Updated": "2025-05-29T11:37:44+00:00",
-      "Likes": 1803,
+      "Likes": 1883,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": true,
+      "has_hybrid_attention": false,
+      "has_sliding_window": false,
+      "has_gqa": false,
+      "attention_details": {
+        "mla_compression_ratio": 512,
+        "rope_scaling": "yarn"
+      }
     }
   ],
   "Mistral": [
@@ -566,11 +693,18 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 12340,
+      "Downloads": 12415,
       "Last Updated": "2024-10-03T21:15:30+00:00",
       "Likes": 725,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": false,
+      "has_sliding_window": false,
+      "has_gqa": true,
+      "attention_details": {
+        "gqa_ratio": 6.0
+      }
     },
     {
       "Family": "Mistral",
@@ -615,11 +749,16 @@
         "license:apache-2.0",
         "region:us"
       ],
-      "Downloads": 123287,
+      "Downloads": 114724,
       "Last Updated": "2025-05-09T07:58:46+00:00",
-      "Likes": 1265,
+      "Likes": 1267,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": false,
+      "has_sliding_window": false,
+      "has_gqa": false,
+      "attention_details": {}
     },
     {
       "Family": "Mistral",
@@ -652,11 +791,18 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 169659,
+      "Downloads": 144207,
       "Last Updated": "2024-11-06T17:28:00+00:00",
       "Likes": 1543,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": false,
+      "has_sliding_window": false,
+      "has_gqa": true,
+      "attention_details": {
+        "gqa_ratio": 4.0
+      }
     }
   ],
   "Phi": [
@@ -708,11 +854,20 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 285183,
+      "Downloads": 266407,
       "Last Updated": "2025-05-01T15:27:30+00:00",
-      "Likes": 495,
+      "Likes": 498,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": true,
+      "has_sliding_window": true,
+      "has_gqa": true,
+      "attention_details": {
+        "sliding_window_size": 262144,
+        "gqa_ratio": 3.0,
+        "rope_scaling": "longrope"
+      }
     }
   ],
   "IBM": [
@@ -739,11 +894,18 @@
         "autotrain_compatible",
         "region:us"
       ],
-      "Downloads": 60243,
+      "Downloads": 63125,
       "Last Updated": "2025-05-12T06:39:42+00:00",
       "Likes": 87,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": false,
+      "has_sliding_window": false,
+      "has_gqa": true,
+      "attention_details": {
+        "gqa_ratio": 4.0
+      }
     }
   ],
   "Google": [
@@ -796,11 +958,18 @@
         "endpoints_compatible",
         "region:us"
       ],
-      "Downloads": 404008,
+      "Downloads": 402215,
       "Last Updated": "2025-03-21T20:29:02+00:00",
-      "Likes": 1416,
+      "Likes": 1420,
       "Input Tokens": 16385,
-      "Output Tokens": 4096
+      "Output Tokens": 4096,
+      "has_mla": false,
+      "has_hybrid_attention": true,
+      "has_sliding_window": false,
+      "has_gqa": false,
+      "attention_details": {
+        "type": "gemma3_5to1_hybrid"
+      }
     }
   ]
 }

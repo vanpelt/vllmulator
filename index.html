@@ -256,6 +256,12 @@
                            model.ID.toLowerCase().includes("mixtral") ||
                            model.Parameters > 100000000000; // >100B params likely MoE
               
+              // Use attention optimization flags from enriched data if available
+              const hasMLAAttention = model.has_mla || false;
+              const hasHybridAttention = model.has_hybrid_attention || model.has_sliding_window || false;
+              const hasGQA = model.has_gqa || false;
+              const attentionDetails = model.attention_details || {};
+              
               // For MoE models, estimate active parameters (typically 10-20% of total)
               let activeParameters = model.Parameters;
               if (isMoE) {
@@ -281,6 +287,10 @@
                 hidden_layers: model["Hidden Layers"],
                 type: isMoE ? "moe" : "dense",
                 model_type: model.Type,
+                has_mla: hasMLAAttention,
+                has_hybrid_attention: hasHybridAttention,
+                has_gqa: hasGQA,
+                attention_details: attentionDetails,
                 variants: variants // Use total parameter variants for memory calculation
               });
             });
@@ -535,11 +545,19 @@
         kvInputsDiv.style.display = "none";
         resultsDiv.style.display = "none";
 
-        // Remove MoE info if it exists
+        // Remove MoE, attention, and GQA info if they exist
         const tableContainer = document.getElementById("precision-table-container");
         const existingMoeInfo = tableContainer.querySelector(".moe-info");
         if (existingMoeInfo) {
           existingMoeInfo.remove();
+        }
+        const existingAttentionInfo = tableContainer.querySelector(".attention-info");
+        if (existingAttentionInfo) {
+          existingAttentionInfo.remove();
+        }
+        const existingGqaInfo = tableContainer.querySelector(".gqa-info");
+        if (existingGqaInfo) {
+          existingGqaInfo.remove();
         }
 
         // Reset hidden size input
@@ -563,11 +581,19 @@
         const gpuMem = chosenGPU.memory_gb;
         const variants = chosenModel.variants;
         
-        // Always remove existing MoE info first
+        // Always remove existing MoE, attention, and GQA info first
         const tableContainer = document.getElementById("precision-table-container");
         const existingMoeInfo = tableContainer.querySelector(".moe-info");
         if (existingMoeInfo) {
           existingMoeInfo.remove();
+        }
+        const existingAttentionInfo = tableContainer.querySelector(".attention-info");
+        if (existingAttentionInfo) {
+          existingAttentionInfo.remove();
+        }
+        const existingGqaInfo = tableContainer.querySelector(".gqa-info");
+        if (existingGqaInfo) {
+          existingGqaInfo.remove();
         }
         
         // Add MoE indicator if this is a MoE model
@@ -587,6 +613,79 @@
           `;
           
           tableContainer.insertBefore(moeInfo, tableContainer.querySelector("table"));
+        }
+        
+        // Add attention optimization info if applicable
+        if (chosenModel.has_mla || chosenModel.has_hybrid_attention) {
+          const attentionInfo = document.createElement("div");
+          attentionInfo.className = "attention-info";
+          attentionInfo.style.cssText = "background: #f0f8e6; padding: 1em; margin-bottom: 1em; border-left: 4px solid #4caf50; border-radius: 4px;";
+          
+          let attentionContent = "";
+          if (chosenModel.has_mla) {
+            const reductionPercent = chosenModel.parameters > 100e9 ? "96%" : "86%";
+            const details = chosenModel.attention_details || {};
+            let extraInfo = "";
+            if (details.mla_compression_ratio && details.mla_compression_ratio !== "unknown") {
+              extraInfo = ` (compression rank: ${details.mla_compression_ratio})`;
+            }
+            attentionContent = `
+              <strong>⚡ Multi-Head Latent Attention (MLA) Optimization</strong><br/>
+              <strong>KV Cache Reduction:</strong> ${reductionPercent} smaller memory footprint${extraInfo}<br/>
+              <em>Uses low-rank compression to store a compressed latent vector instead of full Key/Value matrices, dramatically reducing memory usage while maintaining model quality.</em>
+            `;
+          } else if (chosenModel.has_hybrid_attention) {
+            const details = chosenModel.attention_details || {};
+            let slidingInfo = "";
+            let reductionPercent = "40%";
+            
+            if (details.type === "gemma3_5to1_hybrid") {
+              slidingInfo = " (5:1 local:global layers with 1024-token sliding window)";
+              reductionPercent = "50%";
+            } else if (details.sliding_window_size) {
+              slidingInfo = ` (${details.sliding_window_size}-token sliding window)`;
+            } else if (details.type === "gemma2_hybrid") {
+              slidingInfo = " (Gemma 2 hybrid design)";
+            }
+            
+            attentionContent = `
+              <strong>🔄 Hybrid Local Attention Optimization</strong><br/>
+              <strong>KV Cache Reduction:</strong> ${reductionPercent} smaller memory footprint${slidingInfo}<br/>
+              <em>Combines local attention with global attention layers, reducing memory usage for long sequences while preserving quality.</em>
+            `;
+          }
+          
+          // Add GQA info if present
+          if (chosenModel.has_gqa) {
+            const details = chosenModel.attention_details || {};
+            const ratio = details.gqa_ratio ? ` (${details.gqa_ratio.toFixed(1)}:1 ratio)` : "";
+            const gqaContent = `
+              <br/><strong>🎯 Grouped Query Attention (GQA)</strong> - Additional KV cache reduction${ratio}
+            `;
+            attentionContent += gqaContent;
+          }
+          
+          attentionInfo.innerHTML = attentionContent;
+          tableContainer.insertBefore(attentionInfo, tableContainer.querySelector("table"));
+        }
+        
+        // Add GQA info if present (and not already covered by MLA/attention info)
+        if (chosenModel.has_gqa && !chosenModel.has_mla && !chosenModel.has_hybrid_attention) {
+          const gqaInfo = document.createElement("div");
+          gqaInfo.className = "gqa-info";
+          gqaInfo.style.cssText = "background: #fff8e1; padding: 1em; margin-bottom: 1em; border-left: 4px solid #ff9800; border-radius: 4px;";
+          
+          const details = chosenModel.attention_details || {};
+          const ratio = details.gqa_ratio ? ` (${details.gqa_ratio.toFixed(1)}:1 ratio)` : "";
+          const reductionPercent = details.gqa_ratio ? Math.round((1 - 1/details.gqa_ratio) * 100) : 50;
+          
+          gqaInfo.innerHTML = `
+            <strong>🎯 Grouped Query Attention (GQA) Optimization</strong><br/>
+            <strong>KV Cache Reduction:</strong> ~${reductionPercent}% smaller memory footprint${ratio}<br/>
+            <em>Uses fewer key-value heads than query heads, reducing memory usage and computation while maintaining quality. Instead of each attention head having its own K/V pairs, multiple query heads share the same K/V pairs.</em>
+          `;
+          
+          tableContainer.insertBefore(gqaInfo, tableContainer.querySelector("table"));
         }
         
         // Get the hidden size
@@ -658,12 +757,28 @@
             // Use actual hidden layers from enriched data or estimate
             let numLayers = chosenModel.hidden_layers || 32; // fallback to 32 if not available
             
-            // Calculate KV cache size per token in MB
+            // Calculate KV cache size per token in MB with attention optimizations
             // KV cache = num_layers × hidden_size × 2 (for K and V) × dtype_bytes
-            const kvPerTokenMB = (numLayers * hiddenSize * dtypeBytes * 2) / (1024 * 1024);
+            let kvReductionFactor = 1.0;
+            let optimizationLabel = "";
+            
+            if (chosenModel.has_mla) {
+              if (chosenModel.parameters > 100e9) {
+                kvReductionFactor = 0.04;
+                optimizationLabel = " (MLA optimized)";
+              } else {
+                kvReductionFactor = 0.14;
+                optimizationLabel = " (MLA optimized)";
+              }
+            } else if (chosenModel.has_hybrid_attention) {
+              kvReductionFactor = 0.6;
+              optimizationLabel = " (Hybrid Attention)";
+            }
+            
+            const kvPerTokenMB = (numLayers * hiddenSize * dtypeBytes * 2 * kvReductionFactor) / (1024 * 1024);
             tdKvPerToken.textContent = `${kvPerTokenMB.toFixed(
               2
-            )} MB per token (${numLayers} layers)`;
+            )} MB per token (${numLayers} layers${optimizationLabel})`;
           } else {
             tdKvPerToken.textContent = `Need hidden size × layers × ${dtypeBytes} bytes × 2`;
           }
@@ -730,11 +845,27 @@
               // Use actual hidden layers from enriched data or estimate
               let numLayers = chosenModel.hidden_layers || 32; // fallback to 32 if not available
               
-              // Calculate KV cache size per token in MB
+              // Calculate KV cache size per token in MB with attention optimizations
               // KV cache = num_layers × hidden_size × 2 (for K and V) × dtype_bytes
+              let kvReductionFactor = 1.0;
+              let optimizationLabel = "";
+              
+              if (chosenModel.has_mla) {
+                if (chosenModel.parameters > 100e9) {
+                  kvReductionFactor = 0.04;
+                  optimizationLabel = " (MLA optimized)";
+                } else {
+                  kvReductionFactor = 0.14;
+                  optimizationLabel = " (MLA optimized)";
+                }
+              } else if (chosenModel.has_hybrid_attention) {
+                kvReductionFactor = 0.6;
+                optimizationLabel = " (Hybrid Attention)";
+              }
+              
               const kvPerTokenMB =
-                (numLayers * hiddenSize * dtypeBytes * 2) / (1024 * 1024);
-              tdKv.textContent = `${kvPerTokenMB.toFixed(2)} MB per token (${numLayers} layers)`;
+                (numLayers * hiddenSize * dtypeBytes * 2 * kvReductionFactor) / (1024 * 1024);
+              tdKv.textContent = `${kvPerTokenMB.toFixed(2)} MB per token (${numLayers} layers${optimizationLabel})`;
             } else {
               tdKv.textContent = `Need hidden size × layers × ${dtypeBytes} bytes × 2`;
             }
@@ -783,7 +914,49 @@
         // KV‐cache size = num_layers × hidden_size × (contextLen + outputLen) × dtype_bytes × 2
         // (the "×2" is because we store both Key and Value for each token). Then convert to GB.
         const totalTokens = contextLen + outputLen;
-        const kvBytes = numLayers * hiddenSize * totalTokens * dtypeBytes * 2;
+        
+        // Apply attention mechanism optimizations
+        let kvCacheReductionFactor = 1.0;
+        let attentionOptimizationNote = "";
+        
+        if (chosenModel.has_mla) {
+          // MLA (Multi-Head Latent Attention) for DeepSeek models
+          // Reduces KV cache to 4-14% of original size
+          if (chosenModel.parameters > 100e9) { // Large models (>100B)
+            kvCacheReductionFactor = 0.04; // 96% reduction
+            attentionOptimizationNote = " (96% reduction via MLA)";
+          } else { // Smaller models
+            kvCacheReductionFactor = 0.14; // 86% reduction  
+            attentionOptimizationNote = " (86% reduction via MLA)";
+          }
+        } else if (chosenModel.has_hybrid_attention) {
+          // Hybrid Local Attention - varies by implementation
+          const details = chosenModel.attention_details || {};
+          if (details.type === "gemma3_5to1_hybrid") {
+            kvCacheReductionFactor = 0.5; // 50% reduction for Gemma 3's 5:1 architecture
+            attentionOptimizationNote = " (50% reduction via Gemma 3 5:1 Hybrid)";
+          } else if (details.type === "gemma2_hybrid") {
+            kvCacheReductionFactor = 0.5; // 50% reduction for Gemma 2
+            attentionOptimizationNote = " (50% reduction via Gemma 2 Hybrid)";
+          } else if (details.sliding_window_size) {
+            kvCacheReductionFactor = 0.6; // 40% reduction for sliding window
+            attentionOptimizationNote = ` (40% reduction via ${details.sliding_window_size}-token sliding window)`;
+          } else {
+            kvCacheReductionFactor = 0.6; // 40% reduction default
+            attentionOptimizationNote = " (40% reduction via Hybrid Attention)";
+          }
+        }
+        
+        // Apply additional GQA reduction if present
+        if (chosenModel.has_gqa && !chosenModel.has_mla) {
+          const details = chosenModel.attention_details || {};
+          const gqaReduction = details.gqa_ratio ? (1.0 / details.gqa_ratio) : 0.5;
+          kvCacheReductionFactor *= gqaReduction;
+          const gqaPercent = Math.round((1 - gqaReduction) * 100);
+          attentionOptimizationNote += ` + ${gqaPercent}% GQA reduction`;
+        }
+        
+        const kvBytes = numLayers * hiddenSize * totalTokens * dtypeBytes * 2 * kvCacheReductionFactor;
         const kvGB = kvBytes / 1024 ** 3;
 
         // Display parameter size
@@ -812,7 +985,7 @@
         } else {
           paramSizeSpan.textContent = `${modelParamGB.toFixed(2)} GB (${paramCountText})`;
         }
-        kvCacheSizeSpan.textContent = `${kvGB.toFixed(2)} GB (${numLayers} layers)`;
+        kvCacheSizeSpan.textContent = `${kvGB.toFixed(2)} GB (${numLayers} layers${attentionOptimizationNote})`;
         
         // Total memory includes parameters, KV cache, and some overhead for CUDA context
         const overheadGB = 2;
@@ -882,14 +1055,35 @@
         const multiGPUTbody = document.getElementById("multi-gpu-tbody");
         multiGPUTbody.innerHTML = "";
 
-        // Filter out inefficient configurations (more free space than used)
+        // Filter out inefficient configurations and apply smart limits
         const efficientConfigs = multiGPUConfigs.filter(config => {
           // If GPU has more free space than used, it's inefficient
           return !(config.remainingGB > config.memPerGPU);
         });
         
-        // If all configs got filtered out, keep the original list
-        const finalConfigs = efficientConfigs.length > 0 ? efficientConfigs : multiGPUConfigs;
+        // Apply smart filtering based on model size and GPU capacity
+        let finalConfigs = efficientConfigs.length > 0 ? efficientConfigs : multiGPUConfigs;
+        
+        // Smart filtering logic
+        const singleGPUOption = finalConfigs.find(config => config.numGPUs === 1);
+        if (singleGPUOption) {
+          const memoryUtilization = singleGPUOption.memPerGPU / chosenGPU.memory_gb;
+          
+          if (memoryUtilization < 0.3) {
+            // Model uses <30% of single GPU - only show single GPU option
+            finalConfigs = [singleGPUOption];
+          } else if (memoryUtilization < 0.7) {
+            // Model uses 30-70% of single GPU - show single GPU + maybe 2-GPU option
+            const twoGPUConfig = finalConfigs.find(config => config.numGPUs === 2);
+            finalConfigs = twoGPUConfig ? [singleGPUOption, twoGPUConfig] : [singleGPUOption];
+          } else {
+            // Model uses >70% of single GPU - show up to 4 most efficient configs
+            finalConfigs = finalConfigs.slice(0, 4);
+          }
+        } else {
+          // Model doesn't fit on single GPU - show up to 5 most efficient multi-GPU configs
+          finalConfigs = finalConfigs.slice(0, 5);
+        }
         
         // Sort configurations by a weighted score:
         // - Prefer fewer GPUs

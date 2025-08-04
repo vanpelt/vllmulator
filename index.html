@@ -1342,6 +1342,7 @@
           tr.appendChild(tdMem);
           tr.appendChild(tdKvPerToken);
           tr.appendChild(tdRadio);
+          tr.classList.add('stagger-animation');
           precisionTableBody.appendChild(tr);
         }
 
@@ -1736,6 +1737,7 @@
         }
 
         resultsDiv.style.display = "block";
+        resultsDiv.classList.add('scale-in');
       }
 
       // Function to calculate various multi-GPU configurations

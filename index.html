@@ -1019,9 +1019,11 @@
         const mName = modelNameSelect.value;
         if (!mName) {
           resetPrecisionSection();
+          updateProgress(3);
           return;
         }
         chosenModel = processedModels.find((m) => m.name === mName);
+        updateProgress(4);
 
         // Set hidden size from enriched model data
         const hiddenSizeInput = document.getElementById("hidden-size");
@@ -1105,6 +1107,7 @@
       function showPrecisionVariants() {
         precisionTableBody.innerHTML = "";
         precisionTableContainer.style.display = "block";
+        precisionTableContainer.classList.add('scale-in');
         kvInputsDiv.style.display = "none";
         resultsDiv.style.display = "none";
         chosenPrecision = null;
@@ -1322,6 +1325,8 @@
           radio.addEventListener("change", () => {
             chosenPrecision = group.dtype;
             kvInputsDiv.style.display = "block";
+            kvInputsDiv.classList.add('slide-in-left');
+            updateProgress(5);
             // Update KV per‐token placeholder now that we know the precision
             updateKvPlaceholders(group.dtype);
             // Automatically compute results

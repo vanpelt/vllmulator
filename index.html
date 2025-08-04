@@ -319,6 +319,187 @@
       .container {
         animation: fadeInUp 0.8s ease-out;
       }
+      
+      /* Loading animations */
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      
+      @keyframes slideInLeft {
+        from {
+          opacity: 0;
+          transform: translateX(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      
+      @keyframes slideInRight {
+        from {
+          opacity: 0;
+          transform: translateX(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      
+      @keyframes scaleIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      
+      .loading {
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+      
+      .slide-in-left {
+        animation: slideInLeft 0.6s ease-out;
+      }
+      
+      .slide-in-right {
+        animation: slideInRight 0.6s ease-out;
+      }
+      
+      .scale-in {
+        animation: scaleIn 0.5s ease-out;
+      }
+      
+      /* Staggered animation for table rows */
+      .stagger-animation {
+        opacity: 0;
+        animation: slideInLeft 0.4s ease-out forwards;
+      }
+      
+      .stagger-animation:nth-child(1) { animation-delay: 0.1s; }
+      .stagger-animation:nth-child(2) { animation-delay: 0.2s; }
+      .stagger-animation:nth-child(3) { animation-delay: 0.3s; }
+      .stagger-animation:nth-child(4) { animation-delay: 0.4s; }
+      .stagger-animation:nth-child(5) { animation-delay: 0.5s; }
+      .stagger-animation:nth-child(6) { animation-delay: 0.6s; }
+      .stagger-animation:nth-child(7) { animation-delay: 0.7s; }
+      
+      /* Progress indicator */
+      .progress-steps {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 2rem 0;
+        gap: 1rem;
+      }
+      
+      .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        background: #e2e8f0;
+        color: #a0aec0;
+        transition: all 0.4s ease;
+        position: relative;
+      }
+      
+      .step.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+      
+      .step.completed {
+        background: #48bb78;
+        color: white;
+      }
+      
+      .step::after {
+        content: '';
+        position: absolute;
+        right: -0.75rem;
+        width: 0.5rem;
+        height: 2px;
+        background: #e2e8f0;
+        transition: background 0.4s ease;
+      }
+      
+      .step:last-child::after {
+        display: none;
+      }
+      
+      .step.completed::after {
+        background: #48bb78;
+      }
+      
+      /* Floating action buttons */
+      .floating-actions {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        z-index: 100;
+      }
+      
+      .fab {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+      }
+      
+      .fab:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      }
+      
+      /* Copy button for command output */
+      .copy-button {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        color: #e2e8f0;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+      }
+      
+      .copy-button:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+      }
+      
+      .copy-success {
+        background: #48bb78 !important;
+        color: white !important;
+      }
     </style>
   </head>
 
@@ -329,17 +510,26 @@
     
     <div class="container">
       <h1>🚀 The vLLMulator</h1>
-    <p>
-      Select your GPU and model below. Then enter your desired max context length and max output
-      tokens, and we’ll show you:
-    </p>
-    <ol>
-      <li>Which precision variants of that model will fit on your GPU</li>
-      <li>Approximate KV‐cache size in GB</li>
-      <li>A suggested vLLM command line (with flags) you can copy & paste</li>
-    </ol>
+      <p>
+        Select your GPU and model below. Then enter your desired max context length and max output
+        tokens, and we'll show you:
+      </p>
+      <ol>
+        <li>Which precision variants of that model will fit on your GPU</li>
+        <li>Approximate KV‐cache size in GB</li>
+        <li>A suggested vLLM command line (with flags) you can copy & paste</li>
+      </ol>
 
-    <!-- Top 3 selectors in 3 columns -->
+      <!-- Progress Steps -->
+      <div class="progress-steps">
+        <div class="step" id="step-1">1</div>
+        <div class="step" id="step-2">2</div>
+        <div class="step" id="step-3">3</div>
+        <div class="step" id="step-4">4</div>
+        <div class="step" id="step-5">5</div>
+      </div>
+
+      <!-- Top 3 selectors in 3 columns -->
     <div class="inline-inputs">
       <div>
         <label for="gpu-select">1. Pick a GPU:</label>
@@ -455,7 +645,16 @@
       </div>
 
       <p><strong>Suggested vLLM Command Line:</strong></p>
-      <div class="cmd-output" id="vllm-cmd-text">—</div>
+      <div class="cmd-output" id="vllm-cmd-text">
+        <button class="copy-button" id="copy-btn" onclick="copyCommand()">📋 Copy</button>
+        —
+      </div>
+    </div>
+
+    <!-- Floating Action Buttons -->
+    <div class="floating-actions">
+      <button class="fab" onclick="scrollToTop()" title="Scroll to top">↑</button>
+      <button class="fab" onclick="resetAll()" title="Reset all selections">🔄</button>
     </div>
 
     <script>

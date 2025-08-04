@@ -563,38 +563,40 @@
         <span id="kv-cache-size" style="display: none;">—</span>
         <span id="total-memory" style="display: none;">—</span>
 
-      <!-- Multi-GPU Config Section -->
-      <div id="multi-gpu-section">
-        <h3>Multi-GPU Configurations</h3>
-        <div class="parallelism-info" style="background: #f8f8f8; padding: 1em; margin-bottom: 1em; border-left: 4px solid #ccc;">
-          <strong>Understanding Parallelism Strategies:</strong>
-          <ul>
-            <li><strong>Tensor Parallelism (TP):</strong> Divides each layer across GPUs. Lower latency, higher throughput, requires fast GPU interconnect.</li>
-            <li><strong>Pipeline Parallelism (PP):</strong> Divides layers sequentially across GPUs. Higher latency, more memory efficient for KV cache.</li>
-            <li><strong>Optimal Config:</strong> <span style="color: #038543">✓ Highlighted in green</span>. Balances efficiency and performance.</li>
-          </ul>
+        <!-- Multi-GPU Config Section -->
+        <div id="multi-gpu-section">
+          <h3>Multi-GPU Configurations</h3>
+          <div class="info-panel">
+            <strong>Understanding Parallelism Strategies:</strong>
+            <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+              <li><strong>Tensor Parallelism (TP):</strong> Divides each layer across GPUs. Lower latency, higher throughput, requires fast GPU interconnect.</li>
+              <li><strong>Pipeline Parallelism (PP):</strong> Divides layers sequentially across GPUs. Higher latency, more memory efficient for KV cache.</li>
+              <li><strong>Optimal Config:</strong> <span style="color: #22c55e; font-weight: 600;">✓ Highlighted in green</span>. Balances efficiency and performance.</li>
+            </ul>
+          </div>
+          <p style="margin-bottom: 1rem;">
+            The following configurations distribute the model across multiple GPUs:
+          </p>
+          <table id="multi-gpu-table">
+            <thead>
+              <tr>
+                <th>GPUs</th>
+                <th>Tensor Parallel</th>
+                <th>Pipeline Parallel</th>
+                <th>Memory Per GPU (GB)</th>
+                <th>Remaining RAM (GB)</th>
+                <th>Choose</th>
+              </tr>
+            </thead>
+            <tbody id="multi-gpu-tbody"></tbody>
+          </table>
         </div>
-        <p>
-          The following configurations distribute the model across multiple
-          GPUs:
-        </p>
-        <table id="multi-gpu-table">
-          <thead>
-            <tr>
-              <th>GPUs</th>
-              <th>Tensor Parallel</th>
-              <th>Pipeline Parallel</th>
-              <th>Memory Per GPU (GB)</th>
-              <th>Remaining RAM (GB)</th>
-              <th>Choose</th>
-            </tr>
-          </thead>
-          <tbody id="multi-gpu-tbody"></tbody>
-        </table>
-      </div>
 
-      <p><strong>Suggested vLLM Command Line:</strong></p>
-      <div class="cmd-output" id="vllm-cmd-text">—</div>
+        <div style="margin-top: 2rem;">
+          <h3>Optimized vLLM Command</h3>
+          <div class="cmd-output" id="vllm-cmd-text">—</div>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -941,9 +943,9 @@
 
       function resetPrecisionSection() {
         precisionTableBody.innerHTML = "";
-        precisionTableContainer.style.display = "none";
-        kvInputsDiv.style.display = "none";
-        resultsDiv.style.display = "none";
+        precisionTableContainer.classList.add("hidden");
+        kvInputsDiv.classList.add("hidden");
+        resultsDiv.classList.add("hidden");
 
         // Remove MoE, attention, and GQA info if they exist
         const tableContainer = document.getElementById("precision-table-container");
@@ -973,9 +975,10 @@
 
       function showPrecisionVariants() {
         precisionTableBody.innerHTML = "";
-        precisionTableContainer.style.display = "block";
-        kvInputsDiv.style.display = "none";
-        resultsDiv.style.display = "none";
+        precisionTableContainer.classList.remove("hidden");
+        precisionTableContainer.classList.add("fade-in");
+        kvInputsDiv.classList.add("hidden");
+        resultsDiv.classList.add("hidden");
         chosenPrecision = null;
 
         const gpuMem = chosenGPU.memory_gb;
@@ -1000,8 +1003,7 @@
         const isMoE = chosenModel.type === "moe";
         if (isMoE) {
           const moeInfo = document.createElement("div");
-          moeInfo.className = "moe-info";
-          moeInfo.style.cssText = "background: #e6f3ff; padding: 1em; margin-bottom: 1em; border-left: 4px solid #0066cc; border-radius: 4px;";
+          moeInfo.className = "moe-info info-panel";
           
           const totalParams = (chosenModel.parameters / 1e9).toFixed(1);
           const activeParams = (chosenModel.active_parameters / 1e9).toFixed(1);

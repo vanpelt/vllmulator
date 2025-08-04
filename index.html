@@ -471,90 +471,97 @@
         </div>
       </div>
 
-    <!-- Top 3 selectors in 3 columns -->
-    <div class="inline-inputs">
-      <div>
-        <label for="gpu-select">1. Pick a GPU:</label>
-        <select id="gpu-select">
-          <option value="">-- Select GPU --</option>
-        </select>
-      </div>
-      <div>
-        <label for="model-family-select">2. Pick a Model Family:</label>
-        <select id="model-family-select">
-          <option value="">-- Select Family --</option>
-        </select>
-      </div>
-      <div>
-        <label for="model-name-select">3. Pick a Model:</label>
-        <select id="model-name-select" disabled>
-          <option value="">-- Select Model --</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Precision Table -->
-    <div id="precision-table-container" style="display: none">
-      <h2>Available Precision Variants</h2>
-      <table id="precision-table">
-        <thead>
-          <tr>
-            <th>Precision</th>
-            <th>Memory Req. (GB)</th>
-            <th>Estimated KV‐cache Per Token (MB)</th>
-            <th>Choose This</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <!-- Hidden Size & Context / Output Inputs -->
-    <div id="kv-inputs" style="display: none">
-      <h2>4. KV‐Cache / Context Settings</h2>
-      <div class="inline-inputs">
-        <div>
-          <label for="hidden-size">Hidden Size:</label>
-          <input type="number" id="hidden-size" readonly />
-          <div
-            id="hidden-size-info"
-            style="font-size: 0.8em; color: #666; margin-top: 0.3em"
-          >
-            Auto-detected from model metadata
+      <!-- Configuration Steps -->
+      <div class="card fade-in">
+        <h2><span class="step-number">1</span> Hardware & Model Selection</h2>
+        <div class="inline-inputs">
+          <div class="input-group">
+            <label for="gpu-select">Pick a GPU:</label>
+            <select id="gpu-select">
+              <option value="">-- Select GPU --</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="model-family-select">Pick a Model Family:</label>
+            <select id="model-family-select">
+              <option value="">-- Select Family --</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="model-name-select">Pick a Model:</label>
+            <select id="model-name-select" disabled>
+              <option value="">-- Select Model --</option>
+            </select>
           </div>
         </div>
-        <div>
-          <label for="context-len">Max Context Length (tokens):</label>
-          <input
-            type="number"
-            id="context-len"
-            placeholder="e.g. 4096"
-            min="1"
-          />
-        </div>
-        <div>
-          <label for="output-len">Max Output Tokens:</label>
-          <input type="number" id="output-len" placeholder="e.g. 512" min="0" />
+      </div>
+
+      <!-- Precision Table -->
+      <div id="precision-table-container" class="card hidden">
+        <h2><span class="step-number">2</span> Available Precision Variants</h2>
+        <table id="precision-table">
+          <thead>
+            <tr>
+              <th>Precision</th>
+              <th>Memory Req. (GB)</th>
+              <th>Estimated KV‐cache Per Token (MB)</th>
+              <th>Choose This</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Context Settings -->
+      <div id="kv-inputs" class="card hidden">
+        <h2><span class="step-number">3</span> KV‐Cache / Context Settings</h2>
+        <div class="inline-inputs">
+          <div class="input-group">
+            <label for="hidden-size">Hidden Size:</label>
+            <input type="number" id="hidden-size" readonly />
+            <div id="hidden-size-info" class="input-info">
+              Auto-detected from model metadata
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="context-len">Max Context Length (tokens):</label>
+            <input
+              type="number"
+              id="context-len"
+              placeholder="e.g. 4096"
+              min="1"
+            />
+          </div>
+          <div class="input-group">
+            <label for="output-len">Max Output Tokens:</label>
+            <input type="number" id="output-len" placeholder="e.g. 512" min="0" />
+          </div>
         </div>
       </div>
 
-    </div>
+      <!-- Results -->
+      <div id="results" class="card hidden">
+        <h2><span class="step-number">4</span> Memory Analysis & Configuration</h2>
+        
+        <div class="results-summary">
+          <div class="metric-card">
+            <div class="metric-value" id="param-size-value">—</div>
+            <div class="metric-label">Model Parameters</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value" id="kv-cache-value">—</div>
+            <div class="metric-label">KV Cache Size</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value" id="total-memory-value">—</div>
+            <div class="metric-label">Total Memory</div>
+          </div>
+        </div>
 
-    <!-- Results -->
-    <div id="results" style="display: none; margin-top: 2em">
-      <h2>5. Results</h2>
-      <p>
-        <strong>Model Parameter Size:</strong>
-        <span id="param-size">—</span>
-      </p>
-      <p>
-        <strong>Estimated KV‐Cache Size:</strong>
-        <span id="kv-cache-size">—</span>
-      </p>
-      <p>
-        <strong>Total Memory Required:</strong>
-        <span id="total-memory">—</span>
-      </p>
+        <!-- Hidden legacy spans for compatibility -->
+        <span id="param-size" style="display: none;">—</span>
+        <span id="kv-cache-size" style="display: none;">—</span>
+        <span id="total-memory" style="display: none;">—</span>
 
       <!-- Multi-GPU Config Section -->
       <div id="multi-gpu-section">

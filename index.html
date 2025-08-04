@@ -888,6 +888,61 @@
       let chosenModel = null;
       let chosenPrecision = null;
 
+      // Progress tracking
+      function updateProgress(step) {
+        const steps = document.querySelectorAll('.step');
+        steps.forEach((s, index) => {
+          s.classList.remove('active');
+          if (index < step - 1) {
+            s.classList.add('completed');
+          } else if (index === step - 1) {
+            s.classList.add('active');
+          } else {
+            s.classList.remove('completed');
+          }
+        });
+      }
+
+      // Utility functions
+      function copyCommand() {
+        const cmdText = document.getElementById('vllm-cmd-text').textContent.replace('📋 Copy', '').trim();
+        navigator.clipboard.writeText(cmdText).then(() => {
+          const copyBtn = document.getElementById('copy-btn');
+          copyBtn.textContent = '✅ Copied!';
+          copyBtn.classList.add('copy-success');
+          setTimeout(() => {
+            copyBtn.textContent = '📋 Copy';
+            copyBtn.classList.remove('copy-success');
+          }, 2000);
+        });
+      }
+
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function resetAll() {
+        gpuSelect.value = "";
+        modelFamilySelect.value = "";
+        modelNameSelect.innerHTML = '<option value="">-- Select Model --</option>';
+        modelNameSelect.disabled = true;
+        document.getElementById('context-len').value = "";
+        document.getElementById('output-len').value = "";
+        document.getElementById('hidden-size').value = "";
+        resetPrecisionSection();
+        updateProgress(1);
+        chosenGPU = null;
+        chosenModel = null;
+        chosenPrecision = null;
+      }
+
+      // Add animations to elements
+      function addAnimationClass(element, className, delay = 0) {
+        setTimeout(() => {
+          element.classList.add(className);
+        }, delay);
+      }
+
       // Fill GPU dropdown
       dataset.gpus.forEach((gpu, idx) => {
         const opt = document.createElement("option");
@@ -919,6 +974,12 @@
         const idx = gpuSelect.value;
         chosenGPU = idx === "" ? null : dataset.gpus[idx];
         resetModelAndPrecision();
+        if (chosenGPU) {
+          updateProgress(2);
+          addAnimationClass(modelFamilySelect.closest('.inline-inputs > div'), 'slide-in-left');
+        } else {
+          updateProgress(1);
+        }
       });
 
       // When family is selected, populate model names
@@ -928,18 +989,28 @@
         if (!fam) {
           modelNameSelect.disabled = true;
           resetPrecisionSection();
+          updateProgress(2);
           return;
         }
         modelNameSelect.disabled = false;
-        const filtered = processedModels
-          .filter((m) => m.family === fam)
-          .sort((a, b) => a.name.localeCompare(b.name));
-        filtered.forEach((m, idx) => {
-          const opt = document.createElement("option");
-          opt.value = m.name;
-          opt.textContent = m.name;
-          modelNameSelect.appendChild(opt);
-        });
+        updateProgress(3);
+        addAnimationClass(modelNameSelect.closest('.inline-inputs > div'), 'slide-in-right');
+        
+        // Add loading state
+        modelNameSelect.classList.add('loading');
+        setTimeout(() => {
+          const filtered = processedModels
+            .filter((m) => m.family === fam)
+            .sort((a, b) => a.name.localeCompare(b.name));
+          filtered.forEach((m, idx) => {
+            const opt = document.createElement("option");
+            opt.value = m.name;
+            opt.textContent = m.name;
+            modelNameSelect.appendChild(opt);
+          });
+          modelNameSelect.classList.remove('loading');
+        }, 300);
+        
         resetPrecisionSection();
       });
 

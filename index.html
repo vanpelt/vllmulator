@@ -1020,8 +1020,7 @@
         // Add attention optimization info if applicable
         if (chosenModel.has_mla || chosenModel.has_hybrid_attention) {
           const attentionInfo = document.createElement("div");
-          attentionInfo.className = "attention-info";
-          attentionInfo.style.cssText = "background: #f0f8e6; padding: 1em; margin-bottom: 1em; border-left: 4px solid #4caf50; border-radius: 4px;";
+          attentionInfo.className = "attention-info info-panel success";
           
           let attentionContent = "";
           if (chosenModel.has_mla) {
@@ -1074,8 +1073,7 @@
         // Add GQA info if present (and not already covered by MLA/attention info)
         if (chosenModel.has_gqa && !chosenModel.has_mla && !chosenModel.has_hybrid_attention) {
           const gqaInfo = document.createElement("div");
-          gqaInfo.className = "gqa-info";
-          gqaInfo.style.cssText = "background: #fff8e1; padding: 1em; margin-bottom: 1em; border-left: 4px solid #ff9800; border-radius: 4px;";
+          gqaInfo.className = "gqa-info info-panel warning";
           
           const details = chosenModel.attention_details || {};
           const ratio = details.gqa_ratio ? ` (${details.gqa_ratio.toFixed(1)}:1 ratio)` : "";
@@ -1192,7 +1190,8 @@
           radio.value = group.dtype; // Use the primary dtype for the value
           radio.addEventListener("change", () => {
             chosenPrecision = group.dtype;
-            kvInputsDiv.style.display = "block";
+            kvInputsDiv.classList.remove("hidden");
+            kvInputsDiv.classList.add("fade-in");
             // Update KV per‐token placeholder now that we know the precision
             updateKvPlaceholders(group.dtype);
             // Automatically compute results
@@ -1279,7 +1278,7 @@
       function computeResults() {
         // Only compute if we have all necessary selections
         if (!chosenGPU || !chosenModel || !chosenPrecision) {
-          resultsDiv.style.display = "none";
+          resultsDiv.classList.add("hidden");
           return;
         }
         const hiddenSize = parseInt(

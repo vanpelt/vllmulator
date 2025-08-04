@@ -1360,22 +1360,34 @@
         const kvBytes = numLayers * hiddenSize * totalTokens * dtypeBytes * 2 * kvCacheReductionFactor;
         const kvGB = kvBytes / 1024 ** 3;
 
-        // Display parameter size
+        // Display parameter size in new metric cards
+        const paramSizeValue = document.getElementById("param-size-value");
+        const kvCacheValue = document.getElementById("kv-cache-value");
+        const totalMemoryValue = document.getElementById("total-memory-value");
+        
+        // Also update legacy spans for compatibility
         const paramSizeSpan = document.getElementById("param-size");
+        const kvCacheSizeSpan = document.getElementById("kv-cache-size");
         const totalMemorySpan = document.getElementById("total-memory");
+        
         const modelParamGB = parseFloat(chosenModel.variants[p.toLowerCase() + "_gb"]);
         
         // Format parameter count in human-friendly way
         const totalParams = chosenModel.parameters;
         let paramCountText;
+        let paramValueText;
         if (totalParams >= 1e12) {
           paramCountText = `${(totalParams / 1e12).toFixed(1)}T Parameters`;
+          paramValueText = `${(totalParams / 1e12).toFixed(1)}T`;
         } else if (totalParams >= 1e9) {
           paramCountText = `${(totalParams / 1e9).toFixed(1)}B Parameters`;
+          paramValueText = `${(totalParams / 1e9).toFixed(1)}B`;
         } else if (totalParams >= 1e6) {
           paramCountText = `${(totalParams / 1e6).toFixed(1)}M Parameters`;
+          paramValueText = `${(totalParams / 1e6).toFixed(1)}M`;
         } else {
           paramCountText = `${totalParams.toLocaleString()} Parameters`;
+          paramValueText = `${totalParams.toLocaleString()}`;
         }
         
         // Display all the memory requirements with MoE context
@@ -1383,15 +1395,20 @@
         if (isMoE) {
           const activeParams = (chosenModel.active_parameters / 1e9).toFixed(1);
           paramSizeSpan.textContent = `${modelParamGB.toFixed(2)} GB (${paramCountText}, ${activeParams}B Active) - MoE`;
+          paramSizeValue.textContent = `${paramValueText}`;
         } else {
           paramSizeSpan.textContent = `${modelParamGB.toFixed(2)} GB (${paramCountText})`;
+          paramSizeValue.textContent = `${paramValueText}`;
         }
+        
         kvCacheSizeSpan.textContent = `${kvGB.toFixed(2)} GB (${numLayers} layers${attentionOptimizationNote})`;
+        kvCacheValue.textContent = `${kvGB.toFixed(2)} GB`;
         
         // Total memory includes parameters, KV cache, and some overhead for CUDA context
         const overheadGB = 2;
         const totalMemGB = modelParamGB + kvGB + overheadGB;
         totalMemorySpan.textContent = `${totalMemGB.toFixed(2)} GB (includes ${overheadGB} GB overhead)`;
+        totalMemoryValue.textContent = `${totalMemGB.toFixed(2)} GB`;
 
         // Build a suggested vLLM command‐line snippet. We assume:
         //    - model path: the same as model name on Hugging Face (you can adjust)
@@ -1522,9 +1539,7 @@
           
           // Highlight the optimal configuration
           if (config === selectedConfig) {
-            tr.style.backgroundColor = "#e6f7e9";
-            tr.style.fontWeight = "bold";
-            tr.style.color = "#038543";
+            tr.classList.add("multi-gpu-optimal");
           }
 
           const tdGPUs = document.createElement("td");
@@ -1536,7 +1551,8 @@
             const checkMark = document.createElement("span");
             checkMark.textContent = " ✓";
             checkMark.title = "Optimal configuration";
-            checkMark.style.color = "#038543";
+            checkMark.style.color = "#22c55e";
+            checkMark.style.fontWeight = "bold";
             tdGPUs.appendChild(checkMark);
           }
 
@@ -1600,7 +1616,8 @@
           );
         }
 
-        resultsDiv.style.display = "block";
+        resultsDiv.classList.remove("hidden");
+        resultsDiv.classList.add("fade-in");
       }
 
       // Function to calculate various multi-GPU configurations

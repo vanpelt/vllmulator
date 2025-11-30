@@ -4,76 +4,501 @@
     <meta charset="UTF-8" />
     <title>The vLLMulator</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        max-width: 900px;
-        margin: 2em auto;
-        line-height: 1.5;
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+      
+      * {
+        box-sizing: border-box;
       }
+      
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+        line-height: 1.6;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: #2d3748;
+      }
+      
+      .container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      
       h1 {
         text-align: center;
+        font-size: 3rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
       }
+      
+      h2 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #4a5568;
+        margin: 2rem 0 1rem 0;
+        position: relative;
+      }
+      
+      h2::before {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 2px;
+      }
+      
+      h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #4a5568;
+        margin: 1.5rem 0 1rem 0;
+      }
+      
+      p {
+        font-size: 1rem;
+        color: #718096;
+        margin-bottom: 1.5rem;
+      }
+      
+      ol {
+        padding-left: 1.5rem;
+        color: #4a5568;
+      }
+      
+      ol li {
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+      }
+      
       label {
         display: block;
-        margin-top: 1em;
-        font-weight: bold;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 0.95rem;
       }
+      
       select,
       input {
-        margin-top: 0.5em;
-        padding: 0.3em;
         width: 100%;
-        max-width: 300px;
+        max-width: 320px;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-family: inherit;
+        background: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
+      
+      select:focus,
+      input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-1px);
+      }
+      
+      select:disabled,
+      input:disabled {
+        background: #f7fafc;
+        color: #a0aec0;
+        cursor: not-allowed;
+      }
+      
       .inline-inputs {
-        display: flex;
-        gap: 1em;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin: 1.5rem 0;
       }
+      
       .inline-inputs > div {
-        flex: 1;
-        min-width: 150px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 100%);
+        padding: 1.5rem;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
       }
+      
+      .inline-inputs > div:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.2);
+      }
+      
       table {
         width: 100%;
-        border-collapse: collapse;
-        margin-top: 1em;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 1.5rem;
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
       }
+      
       th,
       td {
-        border: 1px solid #ccc;
-        padding: 0.5em;
+        padding: 1rem 0.75rem;
         text-align: center;
+        border-bottom: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
       }
+      
       th {
-        background: #f5f5f5;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
       }
+      
+      tr:hover td {
+        background: #f8fafc;
+        transform: scale(1.01);
+      }
+      
+      tr:last-child td {
+        border-bottom: none;
+      }
+      
       .cmd-output {
-        background: #272822;
-        color: #f8f8f2;
-        padding: 1em;
-        border-radius: 4px;
-        margin-top: 1em;
+        background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        color: #e2e8f0;
+        padding: 1.5rem;
+        border-radius: 16px;
+        margin-top: 1.5rem;
         white-space: pre-wrap;
-        font-family: Consolas, "Courier New", monospace;
+        font-family: 'Fira Code', Consolas, "Courier New", monospace;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        border: 1px solid #4a5568;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow-x: auto;
       }
+      
+      .cmd-output::before {
+        content: '';
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 12px;
+        height: 12px;
+        background: #48bb78;
+        border-radius: 50%;
+        box-shadow: -20px 0 #ed8936, -40px 0 #f56565;
+      }
+      
       .github-corner {
         position: fixed;
-        top: 10px;
-        right: 10px;
+        top: 20px;
+        right: 20px;
         z-index: 1000;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        padding: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
       }
+      
+      .github-corner:hover {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      }
+      
       .github-corner svg {
-        fill: #333;
-        color: #fff;
-        width: 98px;
-        height: 96px;
-        zoom: 0.5;
-        opacity: 0.5;
+        fill: #4a5568;
+        width: 40px;
+        height: 40px;
+        transition: all 0.3s ease;
       }
+      
       .github-corner:hover svg {
-        opacity: 1;
-        transition: opacity 1s ease;
+        fill: #667eea;
+      }
+      
+      input[type="radio"] {
+        width: auto;
+        max-width: none;
+        margin: 0;
+        transform: scale(1.2);
+        accent-color: #667eea;
+      }
+      
+      strong {
+        color: #2d3748;
+        font-weight: 600;
+      }
+      
+      /* Info boxes styling improvements */
+      .parallelism-info, .moe-info, .attention-info, .gqa-info {
+        border-radius: 16px !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        border: none !important;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .parallelism-info::before, .moe-info::before, .attention-info::before, .gqa-info::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--accent-color, #667eea);
+      }
+      
+      .moe-info::before { --accent-color: #0066cc; }
+      .attention-info::before { --accent-color: #4caf50; }
+      .gqa-info::before { --accent-color: #ff9800; }
+      
+      /* Responsive design */
+      @media (max-width: 768px) {
+        body {
+          padding: 1rem 0.5rem;
+        }
+        
+        .container {
+          padding: 1.5rem;
+          border-radius: 16px;
+        }
+        
+        h1 {
+          font-size: 2.5rem;
+        }
+        
+        .inline-inputs {
+          grid-template-columns: 1fr;
+        }
+        
+        table {
+          font-size: 0.9rem;
+        }
+        
+        th, td {
+          padding: 0.75rem 0.5rem;
+        }
+      }
+      
+      /* Smooth page entrance animation */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      .container {
+        animation: fadeInUp 0.8s ease-out;
+      }
+      
+      /* Loading animations */
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      
+      @keyframes slideInLeft {
+        from {
+          opacity: 0;
+          transform: translateX(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      
+      @keyframes slideInRight {
+        from {
+          opacity: 0;
+          transform: translateX(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      
+      @keyframes scaleIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      
+      .loading {
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+      
+      .slide-in-left {
+        animation: slideInLeft 0.6s ease-out;
+      }
+      
+      .slide-in-right {
+        animation: slideInRight 0.6s ease-out;
+      }
+      
+      .scale-in {
+        animation: scaleIn 0.5s ease-out;
+      }
+      
+      /* Staggered animation for table rows */
+      .stagger-animation {
+        opacity: 0;
+        animation: slideInLeft 0.4s ease-out forwards;
+      }
+      
+      .stagger-animation:nth-child(1) { animation-delay: 0.1s; }
+      .stagger-animation:nth-child(2) { animation-delay: 0.2s; }
+      .stagger-animation:nth-child(3) { animation-delay: 0.3s; }
+      .stagger-animation:nth-child(4) { animation-delay: 0.4s; }
+      .stagger-animation:nth-child(5) { animation-delay: 0.5s; }
+      .stagger-animation:nth-child(6) { animation-delay: 0.6s; }
+      .stagger-animation:nth-child(7) { animation-delay: 0.7s; }
+      
+      /* Progress indicator */
+      .progress-steps {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 2rem 0;
+        gap: 1rem;
+      }
+      
+      .step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        background: #e2e8f0;
+        color: #a0aec0;
+        transition: all 0.4s ease;
+        position: relative;
+      }
+      
+      .step.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+      
+      .step.completed {
+        background: #48bb78;
+        color: white;
+      }
+      
+      .step::after {
+        content: '';
+        position: absolute;
+        right: -0.75rem;
+        width: 0.5rem;
+        height: 2px;
+        background: #e2e8f0;
+        transition: background 0.4s ease;
+      }
+      
+      .step:last-child::after {
+        display: none;
+      }
+      
+      .step.completed::after {
+        background: #48bb78;
+      }
+      
+      /* Floating action buttons */
+      .floating-actions {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        z-index: 100;
+      }
+      
+      .fab {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+      }
+      
+      .fab:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      }
+      
+      /* Copy button for command output */
+      .copy-button {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        color: #e2e8f0;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+      }
+      
+      .copy-button:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+      }
+      
+      .copy-success {
+        background: #48bb78 !important;
+        color: white !important;
       }
     </style>
   </head>
@@ -82,18 +507,29 @@
     <a href="https://github.com/vanpelt/vllmulator" class="github-corner" aria-label="View source on GitHub" target="_blank">
       <svg width="98" height="96" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" fill="#24292f"/></svg>
     </a>
-    <h1>The vLLMulator</h1>
-    <p>
-      Select your GPU and model below. Then enter your desired max context length and max output
-      tokens, and we’ll show you:
-    </p>
-    <ol>
-      <li>Which precision variants of that model will fit on your GPU</li>
-      <li>Approximate KV‐cache size in GB</li>
-      <li>A suggested vLLM command line (with flags) you can copy & paste</li>
-    </ol>
+    
+    <div class="container">
+      <h1>🚀 The vLLMulator</h1>
+      <p>
+        Select your GPU and model below. Then enter your desired max context length and max output
+        tokens, and we'll show you:
+      </p>
+      <ol>
+        <li>Which precision variants of that model will fit on your GPU</li>
+        <li>Approximate KV‐cache size in GB</li>
+        <li>A suggested vLLM command line (with flags) you can copy & paste</li>
+      </ol>
 
-    <!-- Top 3 selectors in 3 columns -->
+      <!-- Progress Steps -->
+      <div class="progress-steps">
+        <div class="step" id="step-1">1</div>
+        <div class="step" id="step-2">2</div>
+        <div class="step" id="step-3">3</div>
+        <div class="step" id="step-4">4</div>
+        <div class="step" id="step-5">5</div>
+      </div>
+
+      <!-- Top 3 selectors in 3 columns -->
     <div class="inline-inputs">
       <div>
         <label for="gpu-select">1. Pick a GPU:</label>
@@ -209,7 +645,16 @@
       </div>
 
       <p><strong>Suggested vLLM Command Line:</strong></p>
-      <div class="cmd-output" id="vllm-cmd-text">—</div>
+      <div class="cmd-output" id="vllm-cmd-text">
+        <button class="copy-button" id="copy-btn" onclick="copyCommand()">📋 Copy</button>
+        —
+      </div>
+    </div>
+
+    <!-- Floating Action Buttons -->
+    <div class="floating-actions">
+      <button class="fab" onclick="scrollToTop()" title="Scroll to top">↑</button>
+      <button class="fab" onclick="resetAll()" title="Reset all selections">🔄</button>
     </div>
 
     <script>
@@ -443,6 +888,61 @@
       let chosenModel = null;
       let chosenPrecision = null;
 
+      // Progress tracking
+      function updateProgress(step) {
+        const steps = document.querySelectorAll('.step');
+        steps.forEach((s, index) => {
+          s.classList.remove('active');
+          if (index < step - 1) {
+            s.classList.add('completed');
+          } else if (index === step - 1) {
+            s.classList.add('active');
+          } else {
+            s.classList.remove('completed');
+          }
+        });
+      }
+
+      // Utility functions
+      function copyCommand() {
+        const cmdText = document.getElementById('vllm-cmd-text').textContent.replace('📋 Copy', '').trim();
+        navigator.clipboard.writeText(cmdText).then(() => {
+          const copyBtn = document.getElementById('copy-btn');
+          copyBtn.textContent = '✅ Copied!';
+          copyBtn.classList.add('copy-success');
+          setTimeout(() => {
+            copyBtn.textContent = '📋 Copy';
+            copyBtn.classList.remove('copy-success');
+          }, 2000);
+        });
+      }
+
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function resetAll() {
+        gpuSelect.value = "";
+        modelFamilySelect.value = "";
+        modelNameSelect.innerHTML = '<option value="">-- Select Model --</option>';
+        modelNameSelect.disabled = true;
+        document.getElementById('context-len').value = "";
+        document.getElementById('output-len').value = "";
+        document.getElementById('hidden-size').value = "";
+        resetPrecisionSection();
+        updateProgress(1);
+        chosenGPU = null;
+        chosenModel = null;
+        chosenPrecision = null;
+      }
+
+      // Add animations to elements
+      function addAnimationClass(element, className, delay = 0) {
+        setTimeout(() => {
+          element.classList.add(className);
+        }, delay);
+      }
+
       // Fill GPU dropdown
       dataset.gpus.forEach((gpu, idx) => {
         const opt = document.createElement("option");
@@ -474,6 +974,12 @@
         const idx = gpuSelect.value;
         chosenGPU = idx === "" ? null : dataset.gpus[idx];
         resetModelAndPrecision();
+        if (chosenGPU) {
+          updateProgress(2);
+          addAnimationClass(modelFamilySelect.closest('.inline-inputs > div'), 'slide-in-left');
+        } else {
+          updateProgress(1);
+        }
       });
 
       // When family is selected, populate model names
@@ -483,18 +989,28 @@
         if (!fam) {
           modelNameSelect.disabled = true;
           resetPrecisionSection();
+          updateProgress(2);
           return;
         }
         modelNameSelect.disabled = false;
-        const filtered = processedModels
-          .filter((m) => m.family === fam)
-          .sort((a, b) => a.name.localeCompare(b.name));
-        filtered.forEach((m, idx) => {
-          const opt = document.createElement("option");
-          opt.value = m.name;
-          opt.textContent = m.name;
-          modelNameSelect.appendChild(opt);
-        });
+        updateProgress(3);
+        addAnimationClass(modelNameSelect.closest('.inline-inputs > div'), 'slide-in-right');
+        
+        // Add loading state
+        modelNameSelect.classList.add('loading');
+        setTimeout(() => {
+          const filtered = processedModels
+            .filter((m) => m.family === fam)
+            .sort((a, b) => a.name.localeCompare(b.name));
+          filtered.forEach((m, idx) => {
+            const opt = document.createElement("option");
+            opt.value = m.name;
+            opt.textContent = m.name;
+            modelNameSelect.appendChild(opt);
+          });
+          modelNameSelect.classList.remove('loading');
+        }, 300);
+        
         resetPrecisionSection();
       });
 
@@ -503,9 +1019,11 @@
         const mName = modelNameSelect.value;
         if (!mName) {
           resetPrecisionSection();
+          updateProgress(3);
           return;
         }
         chosenModel = processedModels.find((m) => m.name === mName);
+        updateProgress(4);
 
         // Set hidden size from enriched model data
         const hiddenSizeInput = document.getElementById("hidden-size");
@@ -589,6 +1107,7 @@
       function showPrecisionVariants() {
         precisionTableBody.innerHTML = "";
         precisionTableContainer.style.display = "block";
+        precisionTableContainer.classList.add('scale-in');
         kvInputsDiv.style.display = "none";
         resultsDiv.style.display = "none";
         chosenPrecision = null;
@@ -806,6 +1325,8 @@
           radio.addEventListener("change", () => {
             chosenPrecision = group.dtype;
             kvInputsDiv.style.display = "block";
+            kvInputsDiv.classList.add('slide-in-left');
+            updateProgress(5);
             // Update KV per‐token placeholder now that we know the precision
             updateKvPlaceholders(group.dtype);
             // Automatically compute results
@@ -821,6 +1342,7 @@
           tr.appendChild(tdMem);
           tr.appendChild(tdKvPerToken);
           tr.appendChild(tdRadio);
+          tr.classList.add('stagger-animation');
           precisionTableBody.appendChild(tr);
         }
 
@@ -1215,6 +1737,7 @@
         }
 
         resultsDiv.style.display = "block";
+        resultsDiv.classList.add('scale-in');
       }
 
       // Function to calculate various multi-GPU configurations
@@ -1348,5 +1871,6 @@
         }
       }
     </script>
+    </div>
   </body>
 </html>

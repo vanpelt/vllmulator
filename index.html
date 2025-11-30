@@ -4,76 +4,437 @@
     <meta charset="UTF-8" />
     <title>The vLLMulator</title>
     <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+      
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%);
+        --dark-gradient: linear-gradient(135deg, #434343 0%, #000000 100%);
+        --light-bg: #f8fafc;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --border-radius: 12px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
       body {
-        font-family: Arial, sans-serif;
-        max-width: 900px;
-        margin: 2em auto;
-        line-height: 1.5;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--light-bg);
+        background-image: 
+          radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 40% 80%, rgba(120, 200, 255, 0.1) 0%, transparent 50%);
+        min-height: 100vh;
+        line-height: 1.6;
+        color: #334155;
       }
-      h1 {
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .hero-section {
         text-align: center;
+        margin-bottom: 3rem;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
       }
+
+      .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--primary-gradient);
+        opacity: 0.05;
+        z-index: -1;
+      }
+
+      h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+        letter-spacing: -0.02em;
+      }
+
+      .hero-subtitle {
+        font-size: 1.2rem;
+        color: #64748b;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .feature-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .feature-item {
+        background: rgba(255,255,255,0.8);
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        border: 1px solid rgba(255,255,255,0.2);
+      }
+
+      .feature-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+      }
+
+      .feature-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .feature-text {
+        font-weight: 500;
+        color: #475569;
+      }
+
+      .card {
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(10px);
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        transition: var(--transition);
+        border: 1px solid rgba(255,255,255,0.2);
+      }
+
+      .card:hover {
+        box-shadow: var(--card-shadow-hover);
+        transform: translateY(-2px);
+      }
+
+      .card h2 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .card h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 1rem;
+      }
+
+      .step-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 50%;
+        font-weight: 600;
+        font-size: 0.875rem;
+      }
+
       label {
         display: block;
-        margin-top: 1em;
-        font-weight: bold;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #374151;
+        font-size: 0.9rem;
       }
+
       select,
       input {
-        margin-top: 0.5em;
-        padding: 0.3em;
         width: 100%;
-        max-width: 300px;
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        transition: var(--transition);
+        background: rgba(255,255,255,0.9);
+        font-family: inherit;
       }
+
+      select:focus,
+      input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      select:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
       .inline-inputs {
-        display: flex;
-        gap: 1em;
-        flex-wrap: wrap;
+        display: grid;
+        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       }
-      .inline-inputs > div {
-        flex: 1;
-        min-width: 150px;
+
+      .input-group {
+        position: relative;
       }
+
+      .input-info {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background: rgba(241, 245, 249, 0.8);
+        border-radius: 6px;
+        border-left: 3px solid #3b82f6;
+      }
+
       table {
         width: 100%;
-        border-collapse: collapse;
-        margin-top: 1em;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 1rem;
+        background: rgba(255,255,255,0.9);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
       }
-      th,
-      td {
-        border: 1px solid #ccc;
-        padding: 0.5em;
-        text-align: center;
-      }
+
       th {
-        background: #f5f5f5;
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+        letter-spacing: 0.05em;
       }
+
+      td {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        transition: var(--transition);
+      }
+
+      tr:hover td {
+        background: rgba(102, 126, 234, 0.05);
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      .precision-row {
+        position: relative;
+      }
+
+      .precision-row input[type="radio"] {
+        width: auto;
+        margin: 0;
+        transform: scale(1.2);
+        accent-color: #667eea;
+      }
+
+      .multi-gpu-optimal {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%) !important;
+        border-left: 4px solid #22c55e;
+      }
+
+      .multi-gpu-optimal td {
+        color: #166534;
+        font-weight: 500;
+      }
+
       .cmd-output {
-        background: #272822;
-        color: #f8f8f2;
-        padding: 1em;
-        border-radius: 4px;
-        margin-top: 1em;
+        background: var(--dark-gradient);
+        color: #f1f5f9;
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        margin-top: 1rem;
         white-space: pre-wrap;
-        font-family: Consolas, "Courier New", monospace;
+        font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow-x: auto;
       }
+
+      .cmd-output::before {
+        content: '$ ';
+        color: #4ade80;
+        font-weight: 600;
+      }
+
+      .info-panel {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+        border-left: 4px solid #3b82f6;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin: 1rem 0;
+      }
+
+      .info-panel.success {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+        border-left-color: #22c55e;
+      }
+
+      .info-panel.warning {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 101, 101, 0.1) 100%);
+        border-left-color: #f59e0b;
+      }
+
+      .info-panel strong {
+        color: #1e293b;
+        font-weight: 600;
+      }
+
+      .memory-gauge {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 0.5rem 0;
+      }
+
+      .memory-fill {
+        height: 100%;
+        background: var(--success-gradient);
+        transition: var(--transition);
+        border-radius: 4px;
+      }
+
+      .memory-fill.warning {
+        background: var(--warning-gradient);
+      }
+
+      .memory-fill.danger {
+        background: var(--danger-gradient);
+      }
+
       .github-corner {
         position: fixed;
-        top: 10px;
-        right: 10px;
+        top: 20px;
+        right: 20px;
         z-index: 1000;
+        backdrop-filter: blur(10px);
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        padding: 0.5rem;
+        transition: var(--transition);
       }
+      
+      .github-corner:hover {
+        background: rgba(255,255,255,0.2);
+        transform: scale(1.1);
+      }
+
       .github-corner svg {
-        fill: #333;
-        color: #fff;
-        width: 98px;
-        height: 96px;
-        zoom: 0.5;
-        opacity: 0.5;
+        fill: #334155;
+        width: 40px;
+        height: 40px;
       }
-      .github-corner:hover svg {
-        opacity: 1;
-        transition: opacity 1s ease;
+
+      .hidden {
+        display: none !important;
+      }
+
+      .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+
+      .results-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .metric-card {
+        background: rgba(255,255,255,0.9);
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        transition: var(--transition);
+      }
+
+      .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+      }
+
+      .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+      }
+
+      .metric-label {
+        color: #64748b;
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem;
+        }
+        
+        h1 {
+          font-size: 2.5rem;
+        }
+        
+        .inline-inputs {
+          grid-template-columns: 1fr;
+        }
+        
+        .card {
+          padding: 1.5rem;
+        }
       }
     </style>
   </head>
@@ -82,134 +443,160 @@
     <a href="https://github.com/vanpelt/vllmulator" class="github-corner" aria-label="View source on GitHub" target="_blank">
       <svg width="98" height="96" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" fill="#24292f"/></svg>
     </a>
-    <h1>The vLLMulator</h1>
-    <p>
-      Select your GPU and model below. Then enter your desired max context length and max output
-      tokens, and we’ll show you:
-    </p>
-    <ol>
-      <li>Which precision variants of that model will fit on your GPU</li>
-      <li>Approximate KV‐cache size in GB</li>
-      <li>A suggested vLLM command line (with flags) you can copy & paste</li>
-    </ol>
-
-    <!-- Top 3 selectors in 3 columns -->
-    <div class="inline-inputs">
-      <div>
-        <label for="gpu-select">1. Pick a GPU:</label>
-        <select id="gpu-select">
-          <option value="">-- Select GPU --</option>
-        </select>
-      </div>
-      <div>
-        <label for="model-family-select">2. Pick a Model Family:</label>
-        <select id="model-family-select">
-          <option value="">-- Select Family --</option>
-        </select>
-      </div>
-      <div>
-        <label for="model-name-select">3. Pick a Model:</label>
-        <select id="model-name-select" disabled>
-          <option value="">-- Select Model --</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Precision Table -->
-    <div id="precision-table-container" style="display: none">
-      <h2>Available Precision Variants</h2>
-      <table id="precision-table">
-        <thead>
-          <tr>
-            <th>Precision</th>
-            <th>Memory Req. (GB)</th>
-            <th>Estimated KV‐cache Per Token (MB)</th>
-            <th>Choose This</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <!-- Hidden Size & Context / Output Inputs -->
-    <div id="kv-inputs" style="display: none">
-      <h2>4. KV‐Cache / Context Settings</h2>
-      <div class="inline-inputs">
-        <div>
-          <label for="hidden-size">Hidden Size:</label>
-          <input type="number" id="hidden-size" readonly />
-          <div
-            id="hidden-size-info"
-            style="font-size: 0.8em; color: #666; margin-top: 0.3em"
-          >
-            Auto-detected from model metadata
+    
+    <div class="container">
+      <div class="hero-section">
+        <h1>The vLLMulator</h1>
+        <p class="hero-subtitle">
+          The ultimate GPU memory calculator for vLLM deployments. Configure your hardware, select your model, and get precise memory requirements with optimized command-line configurations.
+        </p>
+        
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon">🎯</div>
+            <div class="feature-text">Precision variants that fit your GPU</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">💾</div>
+            <div class="feature-text">Accurate KV-cache calculations</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">⚡</div>
+            <div class="feature-text">Optimized vLLM commands</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🔀</div>
+            <div class="feature-text">Multi-GPU configurations</div>
           </div>
         </div>
-        <div>
-          <label for="context-len">Max Context Length (tokens):</label>
-          <input
-            type="number"
-            id="context-len"
-            placeholder="e.g. 4096"
-            min="1"
-          />
-        </div>
-        <div>
-          <label for="output-len">Max Output Tokens:</label>
-          <input type="number" id="output-len" placeholder="e.g. 512" min="0" />
+      </div>
+
+      <!-- Configuration Steps -->
+      <div class="card fade-in">
+        <h2><span class="step-number">1</span> Hardware & Model Selection</h2>
+        <div class="inline-inputs">
+          <div class="input-group">
+            <label for="gpu-select">Pick a GPU:</label>
+            <select id="gpu-select">
+              <option value="">-- Select GPU --</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="model-family-select">Pick a Model Family:</label>
+            <select id="model-family-select">
+              <option value="">-- Select Family --</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="model-name-select">Pick a Model:</label>
+            <select id="model-name-select" disabled>
+              <option value="">-- Select Model --</option>
+            </select>
+          </div>
         </div>
       </div>
 
-    </div>
-
-    <!-- Results -->
-    <div id="results" style="display: none; margin-top: 2em">
-      <h2>5. Results</h2>
-      <p>
-        <strong>Model Parameter Size:</strong>
-        <span id="param-size">—</span>
-      </p>
-      <p>
-        <strong>Estimated KV‐Cache Size:</strong>
-        <span id="kv-cache-size">—</span>
-      </p>
-      <p>
-        <strong>Total Memory Required:</strong>
-        <span id="total-memory">—</span>
-      </p>
-
-      <!-- Multi-GPU Config Section -->
-      <div id="multi-gpu-section">
-        <h3>Multi-GPU Configurations</h3>
-        <div class="parallelism-info" style="background: #f8f8f8; padding: 1em; margin-bottom: 1em; border-left: 4px solid #ccc;">
-          <strong>Understanding Parallelism Strategies:</strong>
-          <ul>
-            <li><strong>Tensor Parallelism (TP):</strong> Divides each layer across GPUs. Lower latency, higher throughput, requires fast GPU interconnect.</li>
-            <li><strong>Pipeline Parallelism (PP):</strong> Divides layers sequentially across GPUs. Higher latency, more memory efficient for KV cache.</li>
-            <li><strong>Optimal Config:</strong> <span style="color: #038543">✓ Highlighted in green</span>. Balances efficiency and performance.</li>
-          </ul>
-        </div>
-        <p>
-          The following configurations distribute the model across multiple
-          GPUs:
-        </p>
-        <table id="multi-gpu-table">
+      <!-- Precision Table -->
+      <div id="precision-table-container" class="card hidden">
+        <h2><span class="step-number">2</span> Available Precision Variants</h2>
+        <table id="precision-table">
           <thead>
             <tr>
-              <th>GPUs</th>
-              <th>Tensor Parallel</th>
-              <th>Pipeline Parallel</th>
-              <th>Memory Per GPU (GB)</th>
-              <th>Remaining RAM (GB)</th>
-              <th>Choose</th>
+              <th>Precision</th>
+              <th>Memory Req. (GB)</th>
+              <th>Estimated KV‐cache Per Token (MB)</th>
+              <th>Choose This</th>
             </tr>
           </thead>
-          <tbody id="multi-gpu-tbody"></tbody>
+          <tbody></tbody>
         </table>
       </div>
 
-      <p><strong>Suggested vLLM Command Line:</strong></p>
-      <div class="cmd-output" id="vllm-cmd-text">—</div>
+      <!-- Context Settings -->
+      <div id="kv-inputs" class="card hidden">
+        <h2><span class="step-number">3</span> KV‐Cache / Context Settings</h2>
+        <div class="inline-inputs">
+          <div class="input-group">
+            <label for="hidden-size">Hidden Size:</label>
+            <input type="number" id="hidden-size" readonly />
+            <div id="hidden-size-info" class="input-info">
+              Auto-detected from model metadata
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="context-len">Max Context Length (tokens):</label>
+            <input
+              type="number"
+              id="context-len"
+              placeholder="e.g. 4096"
+              min="1"
+            />
+          </div>
+          <div class="input-group">
+            <label for="output-len">Max Output Tokens:</label>
+            <input type="number" id="output-len" placeholder="e.g. 512" min="0" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="results" class="card hidden">
+        <h2><span class="step-number">4</span> Memory Analysis & Configuration</h2>
+        
+        <div class="results-summary">
+          <div class="metric-card">
+            <div class="metric-value" id="param-size-value">—</div>
+            <div class="metric-label">Model Parameters</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value" id="kv-cache-value">—</div>
+            <div class="metric-label">KV Cache Size</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value" id="total-memory-value">—</div>
+            <div class="metric-label">Total Memory</div>
+          </div>
+        </div>
+
+        <!-- Hidden legacy spans for compatibility -->
+        <span id="param-size" style="display: none;">—</span>
+        <span id="kv-cache-size" style="display: none;">—</span>
+        <span id="total-memory" style="display: none;">—</span>
+
+        <!-- Multi-GPU Config Section -->
+        <div id="multi-gpu-section">
+          <h3>Multi-GPU Configurations</h3>
+          <div class="info-panel">
+            <strong>Understanding Parallelism Strategies:</strong>
+            <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+              <li><strong>Tensor Parallelism (TP):</strong> Divides each layer across GPUs. Lower latency, higher throughput, requires fast GPU interconnect.</li>
+              <li><strong>Pipeline Parallelism (PP):</strong> Divides layers sequentially across GPUs. Higher latency, more memory efficient for KV cache.</li>
+              <li><strong>Optimal Config:</strong> <span style="color: #22c55e; font-weight: 600;">✓ Highlighted in green</span>. Balances efficiency and performance.</li>
+            </ul>
+          </div>
+          <p style="margin-bottom: 1rem;">
+            The following configurations distribute the model across multiple GPUs:
+          </p>
+          <table id="multi-gpu-table">
+            <thead>
+              <tr>
+                <th>GPUs</th>
+                <th>Tensor Parallel</th>
+                <th>Pipeline Parallel</th>
+                <th>Memory Per GPU (GB)</th>
+                <th>Remaining RAM (GB)</th>
+                <th>Choose</th>
+              </tr>
+            </thead>
+            <tbody id="multi-gpu-tbody"></tbody>
+          </table>
+        </div>
+
+        <div style="margin-top: 2rem;">
+          <h3>Optimized vLLM Command</h3>
+          <div class="cmd-output" id="vllm-cmd-text">—</div>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -556,9 +943,9 @@
 
       function resetPrecisionSection() {
         precisionTableBody.innerHTML = "";
-        precisionTableContainer.style.display = "none";
-        kvInputsDiv.style.display = "none";
-        resultsDiv.style.display = "none";
+        precisionTableContainer.classList.add("hidden");
+        kvInputsDiv.classList.add("hidden");
+        resultsDiv.classList.add("hidden");
 
         // Remove MoE, attention, and GQA info if they exist
         const tableContainer = document.getElementById("precision-table-container");
@@ -588,9 +975,10 @@
 
       function showPrecisionVariants() {
         precisionTableBody.innerHTML = "";
-        precisionTableContainer.style.display = "block";
-        kvInputsDiv.style.display = "none";
-        resultsDiv.style.display = "none";
+        precisionTableContainer.classList.remove("hidden");
+        precisionTableContainer.classList.add("fade-in");
+        kvInputsDiv.classList.add("hidden");
+        resultsDiv.classList.add("hidden");
         chosenPrecision = null;
 
         const gpuMem = chosenGPU.memory_gb;
@@ -615,8 +1003,7 @@
         const isMoE = chosenModel.type === "moe";
         if (isMoE) {
           const moeInfo = document.createElement("div");
-          moeInfo.className = "moe-info";
-          moeInfo.style.cssText = "background: #e6f3ff; padding: 1em; margin-bottom: 1em; border-left: 4px solid #0066cc; border-radius: 4px;";
+          moeInfo.className = "moe-info info-panel";
           
           const totalParams = (chosenModel.parameters / 1e9).toFixed(1);
           const activeParams = (chosenModel.active_parameters / 1e9).toFixed(1);
@@ -633,8 +1020,7 @@
         // Add attention optimization info if applicable
         if (chosenModel.has_mla || chosenModel.has_hybrid_attention) {
           const attentionInfo = document.createElement("div");
-          attentionInfo.className = "attention-info";
-          attentionInfo.style.cssText = "background: #f0f8e6; padding: 1em; margin-bottom: 1em; border-left: 4px solid #4caf50; border-radius: 4px;";
+          attentionInfo.className = "attention-info info-panel success";
           
           let attentionContent = "";
           if (chosenModel.has_mla) {
@@ -687,8 +1073,7 @@
         // Add GQA info if present (and not already covered by MLA/attention info)
         if (chosenModel.has_gqa && !chosenModel.has_mla && !chosenModel.has_hybrid_attention) {
           const gqaInfo = document.createElement("div");
-          gqaInfo.className = "gqa-info";
-          gqaInfo.style.cssText = "background: #fff8e1; padding: 1em; margin-bottom: 1em; border-left: 4px solid #ff9800; border-radius: 4px;";
+          gqaInfo.className = "gqa-info info-panel warning";
           
           const details = chosenModel.attention_details || {};
           const ratio = details.gqa_ratio ? ` (${details.gqa_ratio.toFixed(1)}:1 ratio)` : "";
@@ -805,7 +1190,8 @@
           radio.value = group.dtype; // Use the primary dtype for the value
           radio.addEventListener("change", () => {
             chosenPrecision = group.dtype;
-            kvInputsDiv.style.display = "block";
+            kvInputsDiv.classList.remove("hidden");
+            kvInputsDiv.classList.add("fade-in");
             // Update KV per‐token placeholder now that we know the precision
             updateKvPlaceholders(group.dtype);
             // Automatically compute results
@@ -892,7 +1278,7 @@
       function computeResults() {
         // Only compute if we have all necessary selections
         if (!chosenGPU || !chosenModel || !chosenPrecision) {
-          resultsDiv.style.display = "none";
+          resultsDiv.classList.add("hidden");
           return;
         }
         const hiddenSize = parseInt(
@@ -974,22 +1360,34 @@
         const kvBytes = numLayers * hiddenSize * totalTokens * dtypeBytes * 2 * kvCacheReductionFactor;
         const kvGB = kvBytes / 1024 ** 3;
 
-        // Display parameter size
+        // Display parameter size in new metric cards
+        const paramSizeValue = document.getElementById("param-size-value");
+        const kvCacheValue = document.getElementById("kv-cache-value");
+        const totalMemoryValue = document.getElementById("total-memory-value");
+        
+        // Also update legacy spans for compatibility
         const paramSizeSpan = document.getElementById("param-size");
+        const kvCacheSizeSpan = document.getElementById("kv-cache-size");
         const totalMemorySpan = document.getElementById("total-memory");
+        
         const modelParamGB = parseFloat(chosenModel.variants[p.toLowerCase() + "_gb"]);
         
         // Format parameter count in human-friendly way
         const totalParams = chosenModel.parameters;
         let paramCountText;
+        let paramValueText;
         if (totalParams >= 1e12) {
           paramCountText = `${(totalParams / 1e12).toFixed(1)}T Parameters`;
+          paramValueText = `${(totalParams / 1e12).toFixed(1)}T`;
         } else if (totalParams >= 1e9) {
           paramCountText = `${(totalParams / 1e9).toFixed(1)}B Parameters`;
+          paramValueText = `${(totalParams / 1e9).toFixed(1)}B`;
         } else if (totalParams >= 1e6) {
           paramCountText = `${(totalParams / 1e6).toFixed(1)}M Parameters`;
+          paramValueText = `${(totalParams / 1e6).toFixed(1)}M`;
         } else {
           paramCountText = `${totalParams.toLocaleString()} Parameters`;
+          paramValueText = `${totalParams.toLocaleString()}`;
         }
         
         // Display all the memory requirements with MoE context
@@ -997,15 +1395,20 @@
         if (isMoE) {
           const activeParams = (chosenModel.active_parameters / 1e9).toFixed(1);
           paramSizeSpan.textContent = `${modelParamGB.toFixed(2)} GB (${paramCountText}, ${activeParams}B Active) - MoE`;
+          paramSizeValue.textContent = `${paramValueText}`;
         } else {
           paramSizeSpan.textContent = `${modelParamGB.toFixed(2)} GB (${paramCountText})`;
+          paramSizeValue.textContent = `${paramValueText}`;
         }
+        
         kvCacheSizeSpan.textContent = `${kvGB.toFixed(2)} GB (${numLayers} layers${attentionOptimizationNote})`;
+        kvCacheValue.textContent = `${kvGB.toFixed(2)} GB`;
         
         // Total memory includes parameters, KV cache, and some overhead for CUDA context
         const overheadGB = 2;
         const totalMemGB = modelParamGB + kvGB + overheadGB;
         totalMemorySpan.textContent = `${totalMemGB.toFixed(2)} GB (includes ${overheadGB} GB overhead)`;
+        totalMemoryValue.textContent = `${totalMemGB.toFixed(2)} GB`;
 
         // Build a suggested vLLM command‐line snippet. We assume:
         //    - model path: the same as model name on Hugging Face (you can adjust)
@@ -1136,9 +1539,7 @@
           
           // Highlight the optimal configuration
           if (config === selectedConfig) {
-            tr.style.backgroundColor = "#e6f7e9";
-            tr.style.fontWeight = "bold";
-            tr.style.color = "#038543";
+            tr.classList.add("multi-gpu-optimal");
           }
 
           const tdGPUs = document.createElement("td");
@@ -1150,7 +1551,8 @@
             const checkMark = document.createElement("span");
             checkMark.textContent = " ✓";
             checkMark.title = "Optimal configuration";
-            checkMark.style.color = "#038543";
+            checkMark.style.color = "#22c55e";
+            checkMark.style.fontWeight = "bold";
             tdGPUs.appendChild(checkMark);
           }
 
@@ -1214,7 +1616,8 @@
           );
         }
 
-        resultsDiv.style.display = "block";
+        resultsDiv.classList.remove("hidden");
+        resultsDiv.classList.add("fade-in");
       }
 
       // Function to calculate various multi-GPU configurations
